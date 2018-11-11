@@ -372,3 +372,9 @@ ASALocalRun/
 .localhistory/
 
 # End of https://www.gitignore.io/api/visualstudio
+#
+# Latex 
+*.aux
+*.toc
+*.log
+
