@@ -13,10 +13,12 @@ public:
 	int targetStart;
 	int targetEnd;
 	double overlapScore;
-	double extensionScore1; // query extends target
-	double extensionScore2; // target extends query
+	double extensionScore1; // target udesno od querija
+	double extensionScore2; // target ulijevo od querija
 
 	Overlap(std::vector<std::string> elements);
+
+	bool isFullyContained();
 
 private:
 	double calculateOverlapScore(double si);

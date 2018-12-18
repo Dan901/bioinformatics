@@ -23,6 +23,7 @@
     <ClCompile Include="overlap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graph.h" />
     <ClInclude Include="overlap.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -137,7 +138,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
