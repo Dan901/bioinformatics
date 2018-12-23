@@ -22,10 +22,14 @@
     <ClCompile Include="graph.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="overlap.cpp" />
+    <ClCompile Include="paf.cpp" />
+    <ClCompile Include="path.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graph.h" />
     <ClInclude Include="overlap.h" />
+    <ClInclude Include="paf.h" />
+    <ClInclude Include="path.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

@@ -1,29 +1,21 @@
-#include <string>
-#include <vector>
+#include "paf.h"
 
 class Overlap {
 public:
-	std::string queryId;
-	int queryLen;
-	int queryStart;
-	int queryEnd;
+	std::string leftId;
+	int leftLen;
+	int leftStart;
+	int leftEnd;
+	
+	std::string rightId;
+	int rightLen;
+	int rightStart;
+	int rightEnd;
+	
 	bool strand;
-	std::string targetId;
-	int targetLen;
-	int targetStart;
-	int targetEnd;
 	double overlapScore;
-	double extensionScore1; // target udesno od querija
-	double extensionScore2; // target ulijevo od querija
+	double extensionScore;
+	int extensionLen;
 
-	Overlap(std::vector<std::string> elements);
-
-	bool isFullyContained();
-	bool isTargetExtendingRight();
-	double getExtensionScore();
-
-private:
-	double calculateOverlapScore(double si);
-	double calculateExtensionScore1();
-	double calculateExtensionScore2();
+	Overlap(PafLine& pafLine);
 };

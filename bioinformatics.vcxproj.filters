@@ -18,18 +18,30 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="overlap.cpp">
+    <ClCompile Include="graph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graph.cpp">
+    <ClCompile Include="path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="paf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="overlap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="overlap.h">
+    <ClInclude Include="graph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graph.h">
+    <ClInclude Include="path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="paf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="overlap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

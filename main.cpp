@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
 
@@ -24,40 +25,64 @@ std::vector<std::string> split(std::string line, char delim) {
 }
 
 // discard overlaps that are fully contained or have extension score below thershold
-std::vector<Overlap> readAndFilterOverlaps(std::string file, double threshold) {
+// and fill contigIds set
+std::vector<Overlap> readAndfilterReadContigOverlaps(std::string file, double threshold, std::unordered_set<std::string>& contigIds) {
 	std::ifstream input(file);
 	std::string line;
 	std::vector<Overlap> filteredOverlaps;
 
 	while (std::getline(input, line)) {
-		Overlap overlap = Overlap(split(line, '\t'));
-		if (overlap.isFullyContained() || overlap.getExtensionScore() < threshold) {
+		PafLine pafLine(split(line, '\t'));
+		if (pafLine.isFullyContained() || pafLine.getExtensionScore() < threshold) {
 			continue;
 		}
 
-		filteredOverlaps.push_back(std::move(overlap)); // avoid copy
+		contigIds.insert(pafLine.queryId);
+		filteredOverlaps.emplace_back(pafLine);
 	}
-	input.close();
 
 	return filteredOverlaps;
 }
 
-int main() {
-	std::vector<Overlap> readContigOverlaps = readAndFilterOverlaps(READ_CONTIG_OVERLAPS_FILE, 0);
-	std::vector<Overlap> readOverlaps = readAndFilterOverlaps(READ_OVERLAPS_FILE, 0);
+// discard overlaps that are fully contained or have extension score below thershold
+std::vector<Overlap> readAndfilterReadOverlaps(std::string file, double threshold) {
+	std::ifstream input(file);
+	std::string line;
+	std::vector<Overlap> filteredOverlaps;
 
-	Graph graph;
+	while (std::getline(input, line)) {
+		PafLine pafLine(split(line, '\t'));
+		if (pafLine.isFullyContained() || pafLine.getExtensionScore() < threshold) {
+			continue;
+		}
+
+		filteredOverlaps.emplace_back(pafLine);
+	}
+
+	return filteredOverlaps;
+}
+
+Graph constructGraph() {
+	std::unordered_set<std::string> contigIds;
+	std::vector<Overlap> readContigOverlaps = readAndfilterReadContigOverlaps(READ_CONTIG_OVERLAPS_FILE, 0, contigIds);
+	std::vector<Overlap> readOverlaps = readAndfilterReadOverlaps(READ_OVERLAPS_FILE, 0);
+
+	Graph graph(contigIds);
+
 	for (auto overlap : readContigOverlaps) {
-		graph.insertReadContigOverlap(overlap);
+		graph.insertOverlap(overlap);
 	}
 
 	for (auto overlap : readOverlaps) {
 		graph.insertOverlap(overlap);
 	}
 
-	for (auto contig : graph.contigIds) {
-		std::cout << contig << std::endl;
-	}
+	return graph;
+}
 
+int main() {
+	Graph graph = constructGraph();
+
+	std::cout << "End" << std::endl;
 	return 0;
 }
