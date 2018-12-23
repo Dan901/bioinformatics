@@ -8,6 +8,9 @@
 
 #include "graph.h"
 
+std::string READ_CONTIG_OVERLAPS_FILE = "data/BGrahamii/overlaps_reads_contigs.paf";
+std::string READ_OVERLAPS_FILE = "data/BGrahamii/overlaps_reads.paf";
+
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
 	std::stringstream ss(line);
@@ -20,60 +23,41 @@ std::vector<std::string> split(std::string line, char delim) {
 	return elements;
 }
 
+// discard overlaps that are fully contained or have extension score below thershold
 std::vector<Overlap> readAndFilterOverlaps(std::string file, double threshold) {
 	std::ifstream input(file);
 	std::string line;
-	std::vector<Overlap> readContigOverlaps;
+	std::vector<Overlap> filteredOverlaps;
 
 	while (std::getline(input, line)) {
-		readContigOverlaps.emplace_back(split(line, '\t'));
+		Overlap overlap = Overlap(split(line, '\t'));
+		if (overlap.isFullyContained() || overlap.getExtensionScore() < threshold) {
+			continue;
+		}
+
+		filteredOverlaps.push_back(std::move(overlap)); // avoid copy
 	}
 	input.close();
 
-	std::vector<Overlap> filteredReadContigOverlaps;
-	std::copy_if(readContigOverlaps.begin(), readContigOverlaps.end(), std::back_inserter(filteredReadContigOverlaps),
-		[threshold](Overlap o) {
-		if (o.isFullyContained()) {
-			return false;
-		}
-		return o.extensionScore1 > threshold || o.extensionScore2 > threshold;
-	});
-
-	return filteredReadContigOverlaps;
+	return filteredOverlaps;
 }
 
 int main() {
-	std::string readContigOverlapsFile = "C:\\FER - local\\Bioinformatika\\data\\BGrahamii - real\\overlaps_reads_contigs.paf";
-	std::string readOverlapsFile = "C:\\FER - local\\Bioinformatika\\data\\BGrahamii - real\\overlaps_reads.paf";
-
-	std::vector<Overlap> readContigOverlaps = readAndFilterOverlaps(readContigOverlapsFile, 0);
-	std::vector<Overlap> readOverlaps = readAndFilterOverlaps(readOverlapsFile, 0);
+	std::vector<Overlap> readContigOverlaps = readAndFilterOverlaps(READ_CONTIG_OVERLAPS_FILE, 0);
+	std::vector<Overlap> readOverlaps = readAndFilterOverlaps(READ_OVERLAPS_FILE, 0);
 
 	Graph graph;
 	for (auto overlap : readContigOverlaps) {
-		if (overlap.extensionScore1 > overlap.extensionScore2) {
-			graph.contigs[overlap.queryId].rightExtensions.push_back(overlap);
-			graph.reads[overlap.targetId].leftExtensions.push_back(overlap);
-		} else {
-			graph.contigs[overlap.queryId].leftExtensions.push_back(overlap);
-			graph.reads[overlap.targetId].rightExtensions.push_back(overlap);
-		}
+		graph.insertReadContigOverlap(overlap);
 	}
 
 	for (auto overlap : readOverlaps) {
-		Node queryNode = graph.reads[overlap.queryId];
-		Node targetNode = graph.reads[overlap.targetId];
-
-		if (overlap.extensionScore1 > overlap.extensionScore2) {
-			queryNode.rightExtensions.push_back(overlap);
-			targetNode.leftExtensions.push_back(overlap);
-		} else {
-			queryNode.leftExtensions.push_back(overlap);
-			targetNode.rightExtensions.push_back(overlap);
-		}
+		graph.insertOverlap(overlap);
 	}
 
-	std::cout << "Pog";
+	for (auto contig : graph.contigIds) {
+		std::cout << contig << std::endl;
+	}
 
 	return 0;
 }

@@ -27,6 +27,14 @@ bool Overlap::isFullyContained() {
 		((len3 >= len1) && (len4 >= len2));
 }
 
+bool Overlap::isTargetExtendingRight() {
+	return extensionScore1 > extensionScore2;
+}
+
+double Overlap::getExtensionScore() {
+	return isTargetExtendingRight() ? extensionScore1 : extensionScore2;
+}
+
 double Overlap::calculateOverlapScore(double si) {
 	double ol1 = queryEnd - queryStart;
 	double ol2 = targetEnd - targetStart;

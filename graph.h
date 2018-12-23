@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include "overlap.h"
 
 struct Node {
@@ -8,7 +9,13 @@ struct Node {
 	std::vector<Overlap> leftExtensions;
 };
 
-struct Graph {
-	std::unordered_map<std::string, Node> contigs;
-	std::unordered_map<std::string, Node> reads;
+class Graph {
+public:
+	std::unordered_set<std::string> contigIds;
+
+	void insertReadContigOverlap(Overlap& overlap);
+	void insertOverlap(Overlap& overlap);
+
+private:
+	std::unordered_map<std::string, Node> nodes;
 };

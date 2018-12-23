@@ -19,6 +19,8 @@ public:
 	Overlap(std::vector<std::string> elements);
 
 	bool isFullyContained();
+	bool isTargetExtendingRight();
+	double getExtensionScore();
 
 private:
 	double calculateOverlapScore(double si);
