@@ -3,16 +3,24 @@
 #include <unordered_set>
 #include "overlap.h"
 
-class Path {
+struct Path {
 public:
 	std::string start;
-	std::string end;
 	long length;
+	std::vector<Overlap*> overlaps;
+	std::vector<std::string> reads;
 
-	std::vector<PafLine> overlaps;
-	std::unordered_set<std::string> reads;
+	Path(std::string start, long length) : start(start), length(length) {}
 
-	Path(std::string start) : start(start) {}
+	void add(Overlap* overlap);
+	void removeLast();
+	void populateReads();
+};
 
-	void extend(Overlap& overlap);
+struct PathComparator {
+	bool operator()(const Path& obj1, const Path& obj2) const;
+};
+
+struct PathHasher {
+	size_t operator()(const Path& obj) const;
 };

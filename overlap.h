@@ -16,6 +16,10 @@ public:
 	double overlapScore;
 	double extensionScore;
 	int extensionLen;
+	int overhangLen;
 
 	Overlap(PafLine& pafLine);
 };
+
+bool compareByOverlapScore(Overlap* o1, Overlap* o2);
+bool compareByExtensionScore(Overlap* o1, Overlap* o2);

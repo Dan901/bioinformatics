@@ -13,8 +13,8 @@ public:
 	int targetStart;
 	int targetEnd;
 	double overlapScore;
-	double extensionScore1; // target udesno od querija
-	double extensionScore2; // target ulijevo od querija
+	double extensionScore1; // target is right of query
+	double extensionScore2; // target is left of query
 
 	PafLine(std::vector<std::string> elements);
 

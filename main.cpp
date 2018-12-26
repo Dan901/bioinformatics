@@ -9,8 +9,9 @@
 
 #include "graph.h"
 
-std::string READ_CONTIG_OVERLAPS_FILE = "data/BGrahamii/overlaps_reads_contigs.paf";
-std::string READ_OVERLAPS_FILE = "data/BGrahamii/overlaps_reads.paf";
+std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
+std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
+int EXTENSION_THRESHOLD = 0;
 
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
@@ -25,35 +26,20 @@ std::vector<std::string> split(std::string line, char delim) {
 }
 
 // discard overlaps that are fully contained or have extension score below thershold
-// and fill contigIds set
-std::vector<Overlap> readAndfilterReadContigOverlaps(std::string file, double threshold, std::unordered_set<std::string>& contigIds) {
+// and fill contigIds set if it is not null
+std::vector<Overlap> readAndfilterOverlaps(std::string file, double threshold, std::unordered_set<std::string> * contigIds) {
 	std::ifstream input(file);
 	std::string line;
 	std::vector<Overlap> filteredOverlaps;
 
 	while (std::getline(input, line)) {
 		PafLine pafLine(split(line, '\t'));
-		if (pafLine.isFullyContained() || pafLine.getExtensionScore() < threshold) {
+		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.getExtensionScore() < threshold) {
 			continue;
 		}
 
-		contigIds.insert(pafLine.queryId);
-		filteredOverlaps.emplace_back(pafLine);
-	}
-
-	return filteredOverlaps;
-}
-
-// discard overlaps that are fully contained or have extension score below thershold
-std::vector<Overlap> readAndfilterReadOverlaps(std::string file, double threshold) {
-	std::ifstream input(file);
-	std::string line;
-	std::vector<Overlap> filteredOverlaps;
-
-	while (std::getline(input, line)) {
-		PafLine pafLine(split(line, '\t'));
-		if (pafLine.isFullyContained() || pafLine.getExtensionScore() < threshold) {
-			continue;
+		if (contigIds != nullptr) {
+			contigIds->insert(pafLine.queryId);
 		}
 
 		filteredOverlaps.emplace_back(pafLine);
@@ -62,12 +48,12 @@ std::vector<Overlap> readAndfilterReadOverlaps(std::string file, double threshol
 	return filteredOverlaps;
 }
 
-Graph constructGraph() {
+Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 	std::unordered_set<std::string> contigIds;
-	std::vector<Overlap> readContigOverlaps = readAndfilterReadContigOverlaps(READ_CONTIG_OVERLAPS_FILE, 0, contigIds);
-	std::vector<Overlap> readOverlaps = readAndfilterReadOverlaps(READ_OVERLAPS_FILE, 0);
+	std::vector<Overlap> readContigOverlaps = readAndfilterOverlaps(READ_CONTIG_OVERLAPS_FILE, EXTENSION_THRESHOLD, &contigIds);
+	std::vector<Overlap> readOverlaps = readAndfilterOverlaps(READ_OVERLAPS_FILE, EXTENSION_THRESHOLD, nullptr);
 
-	Graph graph(contigIds);
+	Graph graph(contigIds, extensionSelectors);
 
 	for (auto overlap : readContigOverlaps) {
 		graph.insertOverlap(overlap);
@@ -81,7 +67,33 @@ Graph constructGraph() {
 }
 
 int main() {
-	Graph graph = constructGraph();
+	BestExtensionSelector bestOS = BestExtensionSelector(compareByOverlapScore);
+	BestExtensionSelector bestES = BestExtensionSelector(compareByExtensionScore);
+
+	std::vector<ExtensionSelector*> extensionSelectors;
+	extensionSelectors.push_back(&bestOS);
+	extensionSelectors.push_back(&bestES);
+
+	Graph graph = constructGraph(extensionSelectors);
+	std::unordered_set<Path, PathHasher, PathComparator> uniquePaths;
+	int pathCount = 0;
+
+	for (auto contig : graph.contigIds) {
+		std::vector<Path> paths = graph.constructPaths(contig);
+
+		std::cout << "Paths from " << contig << ": " << paths.size() << std::endl;
+
+		for (auto path : paths) {
+			pathCount++;
+			uniquePaths.insert(path);
+		}
+	}
+
+	std::cout << std::endl << "Total paths:" << pathCount << std::endl;
+	std::cout << "Unique paths:" << uniquePaths.size() << std::endl << std::endl;
+	for (auto path : uniquePaths) {
+		std::cout << path.start << " -> " << path.overlaps.back()->rightId << "\t" << path.overlaps.size() << "\t" << path.length << std::endl;
+	}
 
 	std::cout << "End" << std::endl;
 	return 0;
