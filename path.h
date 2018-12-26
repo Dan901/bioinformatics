@@ -4,7 +4,6 @@
 #include "overlap.h"
 
 struct Path {
-public:
 	std::string start;
 	long length;
 	std::vector<Overlap*> overlaps;
