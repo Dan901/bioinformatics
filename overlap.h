@@ -12,13 +12,20 @@ public:
 	int rightStart;
 	int rightEnd;
 	
-	bool strand;
+	bool sameStrand;
 	double overlapScore;
 	double extensionScore;
-	int extensionLen;
-	int overhangLen;
 
 	Overlap(PafLine& pafLine);
+
+	int getExtensionLen(bool direction);
+	int getOverhangLen(bool direction);
+
+private:
+	int extensionLenToRight;
+	int extensionLenToLeft;
+	int overhangLenToRight;
+	int overhangLenToLeft;
 };
 
 bool compareByOverlapScore(Overlap* o1, Overlap* o2);

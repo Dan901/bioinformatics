@@ -22,7 +22,8 @@ public:
 	std::vector<Path> constructPaths(std::string start);
 
 private:
-	std::unordered_map<std::string, std::vector<Overlap>> extensions;
+	std::unordered_map<std::string, std::vector<Overlap>> rightExtensions;
+	std::unordered_map<std::string, std::vector<Overlap>> leftExtensions;
 
 	Path dfs(Overlap* first, ExtensionSelector* extensionSelector);
 };

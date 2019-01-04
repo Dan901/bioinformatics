@@ -7,32 +7,53 @@ PafLine::PafLine(std::vector<std::string> elements) {
 	queryLen = std::stoi(elements[1]);
 	queryStart = std::stoi(elements[2]);
 	queryEnd = std::stoi(elements[3]);
-	strand = elements[4] == "+";
+	sameStrand = elements[4] == "+";
 	targetId = elements[5];
 	targetLen = std::stoi(elements[6]);
 	targetStart = std::stoi(elements[7]);
 	targetEnd = std::stoi(elements[8]);
 	overlapScore = calculateOverlapScore((double)std::stoi(elements[9]) / std::stoi(elements[10]));
+
+	lengths[0] = queryStart;
+	lengths[1] = queryLen - queryEnd - 1;
+	lengths[2] = sameStrand ? targetStart : targetLen - targetEnd - 1;
+	lengths[3] = sameStrand ? targetLen - targetEnd - 1 : targetStart;
+
 	extensionScore1 = calculateExtensionScore1();
 	extensionScore2 = calculateExtensionScore2();
 }
 
 bool PafLine::isFullyContained() {
-	int len1 = queryStart;
-	int len2 = queryLen - queryEnd - 1;
-	int len3 = targetStart;
-	int len4 = targetLen - targetEnd - 1;
-
-	return ((len1 >= len3) && (len2 >= len4)) ||
-		((len3 >= len1) && (len4 >= len2));
+	return ((lengths[0] >= lengths[2]) && (lengths[1] >= lengths[3])) ||
+		((lengths[2] >= lengths[0]) && (lengths[3] >= lengths[1]));
 }
 
 bool PafLine::isTargetExtendingRight() {
 	return extensionScore1 > extensionScore2;
 }
 
+double PafLine::getOverlapScore() {
+	return overlapScore;
+}
+
 double PafLine::getExtensionScore() {
 	return isTargetExtendingRight() ? extensionScore1 : extensionScore2;
+}
+
+int PafLine::getExtensionLenToRight() {
+	return isTargetExtendingRight() ? lengths[3] : lengths[1];
+}
+
+int PafLine::getExtensionLenToLeft() {
+	return isTargetExtendingRight() ? lengths[0] : lengths[2];
+}
+
+int PafLine::getOverhangLenToRight() {
+	return isTargetExtendingRight() ? lengths[1] : lengths[3];
+}
+
+int PafLine::getOverhangLenToLeft() {
+	return isTargetExtendingRight() ? lengths[2] : lengths[0];
 }
 
 double PafLine::calculateOverlapScore(double si) {
@@ -42,15 +63,15 @@ double PafLine::calculateOverlapScore(double si) {
 }
 
 double PafLine::calculateExtensionScore1() {
-	double oh1 = queryLen - queryEnd - 1;
-	double oh2 = targetStart;
-	double el2 = targetLen - targetEnd - 1;
+	double oh1 = lengths[1];
+	double oh2 = lengths[2];
+	double el2 = lengths[3];
 	return overlapScore + el2 / 2 - (oh1 + oh2) / 2;
 }
 
 double PafLine::calculateExtensionScore2() {
-	double oh1 = queryStart;
-	double oh2 = targetLen - targetEnd - 1;
-	double el2 = targetStart;
-	return overlapScore + el2 / 2 - (oh1 + oh2) / 2;
+	double oh1 = lengths[0];
+	double oh2 = lengths[3];
+	double el1 = lengths[1];
+	return overlapScore + el1 / 2 - (oh1 + oh2) / 2;
 }

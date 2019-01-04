@@ -91,9 +91,9 @@ int main() {
 
 	std::cout << std::endl << "Total paths:" << pathCount << std::endl;
 	std::cout << "Unique paths:" << uniquePaths.size() << std::endl << std::endl;
-	for (auto path : uniquePaths) {
-		std::cout << path.start << " -> " << path.overlaps.back()->rightId << "\t" << path.overlaps.size() << "\t" << path.length << std::endl;
-	}
+	//for (auto path : uniquePaths) {
+	//	std::cout << path.start << " -> " << path.overlaps.back()->rightId << "\t" << path.overlaps.size() << "\t" << path.length << std::endl;
+	//}
 
 	ConsensusGenerator gen;
 	gen.generateConsensus(uniquePaths);

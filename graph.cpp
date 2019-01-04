@@ -2,10 +2,11 @@
 #include <iostream>
 #include "graph.h"
 
-long MAX_PATH_LEN = 3000000;
+long MAX_PATH_LEN = 5000000;
 
 void Graph::insertOverlap(Overlap & overlap) {
-	extensions[overlap.leftId].push_back(overlap);
+	rightExtensions[overlap.leftId].push_back(overlap);
+	leftExtensions[overlap.rightId].push_back(overlap);
 }
 
 // get all paths from given starting node
@@ -14,12 +15,12 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 
 	for (auto extensionSelector : extensionSelectors) {
 		
-		for (std::vector<Overlap>::iterator it = extensions[start].begin(); it != extensions[start].end(); ++it) {
+		for (std::vector<Overlap>::iterator first = rightExtensions[start].begin(); first != rightExtensions[start].end(); ++first) {
 			try {
-				Path path = dfs(&(*it), extensionSelector);
+				Path path = dfs(&(*first), extensionSelector);
 
 				if (!path.overlaps.empty()) {
-					path.populateReads();
+					path.finishPath();
 					paths.push_back(std::move(path));
 				}
 			} catch (PathTooLongException& e) {
@@ -33,8 +34,10 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 
 // construct path using DFS starting with given overlap
 Path Graph::dfs(Overlap * first, ExtensionSelector * extensionSelector) {
+	bool direction = first->sameStrand;
+
 	Path path(first->leftId, first->leftLen);
-	path.add(first);
+	path.add(first, direction);
 
 	std::unordered_set<std::string> visitedNodes;
 	visitedNodes.insert(first->leftId);
@@ -50,13 +53,19 @@ Path Graph::dfs(Overlap * first, ExtensionSelector * extensionSelector) {
 			return path;
 		}
 
-		Overlap* next = extensionSelector->getNextExtension(extensions[current], visitedNodes);
+		Overlap* next = extensionSelector->getNextExtension(direction ? rightExtensions[current] : leftExtensions[current], visitedNodes);
 		if (!next) {
-			path.removeLast();
+			bool lastDirection = path.removeLast(direction);
+			if (!lastDirection) {
+				direction = !direction;
+			}
 			continue;
 		}
 
-		path.add(next);
+		if (!next->sameStrand) {
+			direction = !direction;
+		}
+		path.add(next, direction);
 		visitedNodes.insert(next->rightId);
 	}
 

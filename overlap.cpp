@@ -10,9 +10,6 @@ Overlap::Overlap(PafLine & pafLine) {
 		rightLen = pafLine.targetLen;
 		rightStart = pafLine.targetStart;
 		rightEnd = pafLine.targetEnd;
-		extensionScore = pafLine.extensionScore1;
-		extensionLen = pafLine.targetLen - pafLine.targetEnd - 1;
-		overhangLen = pafLine.queryLen - pafLine.queryEnd - 1; // TODO: possibly -1
 	} else {
 		leftId = pafLine.targetId;
 		leftLen = pafLine.targetLen;
@@ -22,13 +19,23 @@ Overlap::Overlap(PafLine & pafLine) {
 		rightLen = pafLine.queryLen;
 		rightStart = pafLine.queryStart;
 		rightEnd = pafLine.queryEnd;
-		extensionScore = pafLine.extensionScore2;
-		extensionLen = pafLine.targetStart;
-		overhangLen = pafLine.queryStart;
 	}
 
-	strand = pafLine.strand;
-	overlapScore = pafLine.overlapScore;
+	sameStrand = pafLine.sameStrand;
+	overlapScore = pafLine.getOverlapScore();
+	extensionScore = pafLine.getExtensionScore();
+	extensionLenToRight = pafLine.getExtensionLenToRight();
+	extensionLenToLeft = pafLine.getExtensionLenToLeft();
+	overhangLenToRight = pafLine.getOverhangLenToRight();
+	overhangLenToLeft = pafLine.getOverhangLenToLeft();
+}
+
+int Overlap::getExtensionLen(bool direction) {
+	return direction ? extensionLenToRight : extensionLenToLeft;
+}
+
+int Overlap::getOverhangLen(bool direction) {
+	return direction ? overhangLenToRight : overhangLenToLeft;
 }
 
 // true if o2 is better than o1

@@ -14,9 +14,9 @@ struct Path {
 	Path() {}
 	Path(std::string start, long length) : start(start), length(length) {}
 
-	void add(Overlap* overlap);
-	void removeLast();
-	void populateReads();
+	void add(Overlap* overlap, bool direction);
+	bool removeLast(bool direction);
+	void finishPath();
 };
 
 struct PathComparator {
