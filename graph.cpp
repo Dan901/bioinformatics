@@ -2,7 +2,7 @@
 #include <iostream>
 #include "graph.h"
 
-long MAX_PATH_LEN = 2000000;
+long MAX_PATH_LEN = 3000000;
 
 void Graph::insertOverlap(Overlap & overlap) {
 	extensions[overlap.leftId].push_back(overlap);
@@ -13,9 +13,10 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 	std::vector<Path> paths;
 
 	for (auto extensionSelector : extensionSelectors) {
-		for (auto first : extensions[start]) {
+		
+		for (std::vector<Overlap>::iterator it = extensions[start].begin(); it != extensions[start].end(); ++it) {
 			try {
-				Path path = dfs(&first, extensionSelector);
+				Path path = dfs(&(*it), extensionSelector);
 
 				if (!path.overlaps.empty()) {
 					path.populateReads();

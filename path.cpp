@@ -23,7 +23,7 @@ void Path::populateReads() {
 }
 
 bool PathComparator::operator()(const Path & obj1, const Path & obj2) const {
-	return std::equal(obj1.reads.begin(), obj1.reads.end(), obj2.reads.begin());
+	return obj1.reads == obj2.reads;
 }
 
 size_t PathHasher::operator()(const Path & obj) const {
