@@ -3,12 +3,15 @@
 #include <unordered_set>
 #include "overlap.h"
 
+#include <iostream>
+
 struct Path {
 	std::string start;
 	long length;
 	std::vector<Overlap*> overlaps;
 	std::vector<std::string> reads;
 
+	Path() {}
 	Path(std::string start, long length) : start(start), length(length) {}
 
 	void add(Overlap* overlap);

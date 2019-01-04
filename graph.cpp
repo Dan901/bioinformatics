@@ -51,7 +51,7 @@ Path Graph::dfs(Overlap * first, ExtensionSelector * extensionSelector) {
 		}
 
 		Overlap* next = extensionSelector->getNextExtension(extensions[current], visitedNodes);
-		if (next == nullptr) {
+		if (!next) {
 			path.removeLast();
 			continue;
 		}

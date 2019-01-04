@@ -30,6 +30,9 @@
     <ClCompile Include="overlap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="consensus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graph.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="overlap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="consensus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

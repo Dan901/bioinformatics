@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-#include "graph.h"
+#include "consensus.h"
 
 std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
@@ -94,6 +94,11 @@ int main() {
 	for (auto path : uniquePaths) {
 		std::cout << path.start << " -> " << path.overlaps.back()->rightId << "\t" << path.overlaps.size() << "\t" << path.length << std::endl;
 	}
+
+	ConsensusGenerator gen;
+	gen.generateConsensus(uniquePaths);
+
+
 
 	std::cout << "End" << std::endl;
 	return 0;
