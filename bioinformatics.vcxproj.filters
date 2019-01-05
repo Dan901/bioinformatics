@@ -27,10 +27,10 @@
     <ClCompile Include="paf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="overlap.cpp">
+    <ClCompile Include="consensus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="consensus.cpp">
+    <ClCompile Include="extension.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,10 +44,10 @@
     <ClInclude Include="paf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="overlap.h">
+    <ClInclude Include="consensus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="consensus.h">
+    <ClInclude Include="extension.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

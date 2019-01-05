@@ -13,25 +13,23 @@ public:
 	int targetStart;
 	int targetEnd;
 
-	PafLine(std::vector<std::string> elements);
-
-	bool isFullyContained();
-	bool isTargetExtendingRight();
-	double getOverlapScore();
-	double getExtensionScore();
-	int getExtensionLenToRight();
-	int getExtensionLenToLeft();
-	int getOverhangLenToRight();
-	int getOverhangLenToLeft();
-
-private:
 	int lengths[4];
 
 	double overlapScore;
-	double extensionScore1; // target is right of query
-	double extensionScore2; // target is left of query
+	double extensionScore1;
+	double extensionScore2;
+	double extensionScore3;
+	double extensionScore4;
 
+	PafLine(std::vector<std::string> elements);
+
+	bool isFullyContained();
+	double getBiggerExtensionScore();
+
+private:
 	double calculateOverlapScore(double si);
 	double calculateExtensionScore1();
 	double calculateExtensionScore2();
+	double calculateExtensionScore3();
+	double calculateExtensionScore4();
 };

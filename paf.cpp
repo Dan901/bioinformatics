@@ -21,6 +21,8 @@ PafLine::PafLine(std::vector<std::string> elements) {
 
 	extensionScore1 = calculateExtensionScore1();
 	extensionScore2 = calculateExtensionScore2();
+	extensionScore3 = calculateExtensionScore3();
+	extensionScore4 = calculateExtensionScore4();
 }
 
 bool PafLine::isFullyContained() {
@@ -28,32 +30,8 @@ bool PafLine::isFullyContained() {
 		((lengths[2] >= lengths[0]) && (lengths[3] >= lengths[1]));
 }
 
-bool PafLine::isTargetExtendingRight() {
-	return extensionScore1 > extensionScore2;
-}
-
-double PafLine::getOverlapScore() {
-	return overlapScore;
-}
-
-double PafLine::getExtensionScore() {
-	return isTargetExtendingRight() ? extensionScore1 : extensionScore2;
-}
-
-int PafLine::getExtensionLenToRight() {
-	return isTargetExtendingRight() ? lengths[3] : lengths[1];
-}
-
-int PafLine::getExtensionLenToLeft() {
-	return isTargetExtendingRight() ? lengths[0] : lengths[2];
-}
-
-int PafLine::getOverhangLenToRight() {
-	return isTargetExtendingRight() ? lengths[1] : lengths[3];
-}
-
-int PafLine::getOverhangLenToLeft() {
-	return isTargetExtendingRight() ? lengths[2] : lengths[0];
+double PafLine::getBiggerExtensionScore() {
+	return extensionScore1 > extensionScore2 ? extensionScore1 : extensionScore2;
 }
 
 double PafLine::calculateOverlapScore(double si) {
@@ -65,13 +43,27 @@ double PafLine::calculateOverlapScore(double si) {
 double PafLine::calculateExtensionScore1() {
 	double oh1 = lengths[1];
 	double oh2 = lengths[2];
-	double el2 = lengths[3];
-	return overlapScore + el2 / 2 - (oh1 + oh2) / 2;
+	double el = lengths[3];
+	return overlapScore + el / 2 - (oh1 + oh2) / 2;
 }
 
 double PafLine::calculateExtensionScore2() {
 	double oh1 = lengths[0];
 	double oh2 = lengths[3];
-	double el1 = lengths[1];
-	return overlapScore + el1 / 2 - (oh1 + oh2) / 2;
+	double el = lengths[1];
+	return overlapScore + el / 2 - (oh1 + oh2) / 2;
+}
+
+double PafLine::calculateExtensionScore3() {
+	double oh1 = lengths[1];
+	double oh2 = lengths[2];
+	double el = lengths[0];
+	return overlapScore + el / 2 - (oh1 + oh2) / 2;
+}
+
+double PafLine::calculateExtensionScore4() {
+	double oh1 = lengths[0];
+	double oh2 = lengths[3];
+	double el = lengths[2];
+	return overlapScore + el / 2 - (oh1 + oh2) / 2;
 }

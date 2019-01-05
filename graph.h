@@ -2,13 +2,14 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include "paf.h"
 #include "path.h"
 
 struct PathTooLongException : public std::exception {};
 
 class ExtensionSelector {
 public:
-	virtual Overlap* getNextExtension(std::vector<Overlap>& extensions, std::unordered_set<std::string>& visitedNodes) = 0;
+	virtual Extension* getNextExtension(std::vector<Extension>& extensions, std::unordered_set<std::string>& visitedNodes) = 0;
 };
 
 class Graph {
@@ -18,14 +19,15 @@ public:
 
 	Graph(std::unordered_set<std::string> contigIds, std::vector<ExtensionSelector*> extensionSelectors) : contigIds(contigIds), extensionSelectors(extensionSelectors) {}
 
-	void insertOverlap(Overlap& overlap);
+	void insertExtensions(PafLine& line);
 	std::vector<Path> constructPaths(std::string start);
 
 private:
-	std::unordered_map<std::string, std::vector<Overlap>> rightExtensions;
-	std::unordered_map<std::string, std::vector<Overlap>> leftExtensions;
+	std::unordered_map<std::string, std::vector<Extension>> prefixes;
+	std::unordered_map<std::string, std::vector<Extension>> suffixes;
 
-	Path dfs(Overlap* first, ExtensionSelector* extensionSelector);
+	Path dfs(std::string start, Extension* first, ExtensionSelector* extensionSelector);
+	bool getNextDirection(Path& path);
 };
 
 template <typename Compare>
@@ -35,17 +37,18 @@ public:
 
 	BestExtensionSelector(Compare compare) : compare(compare) {}
 
-	virtual Overlap* getNextExtension(std::vector<Overlap>& extensions, std::unordered_set<std::string>& visitedNodes);
+	virtual Extension* getNextExtension(std::vector<Extension>& extensions, std::unordered_set<std::string>& visitedNodes);
 };
 
 template<typename Compare>
-inline Overlap * BestExtensionSelector<Compare>::getNextExtension(std::vector<Overlap> & extensions, std::unordered_set<std::string> & visitedNodes) {
-	Overlap* best = nullptr;
+inline Extension * BestExtensionSelector<Compare>::getNextExtension(std::vector<Extension> & extensions, std::unordered_set<std::string> & visitedNodes) {
+	Extension* best = nullptr;
 
-	for (auto & o : extensions) {
-		if (visitedNodes.find(o.rightId) != visitedNodes.end()) continue;
-		if (best == nullptr || compare(best, &o)) {
-			best = &o;
+	for (auto & e : extensions) {
+		if (visitedNodes.find(e.nextId) != visitedNodes.end()) continue;
+
+		if (best == nullptr || compare(best, &e)) {
+			best = &e;
 		}
 	}
 

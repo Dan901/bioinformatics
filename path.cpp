@@ -1,27 +1,24 @@
 #include "path.h"
 
-void Path::add(Overlap * overlap, bool direction) {
-	length -= overlap->getOverhangLen(direction);
-	length += overlap->getExtensionLen(direction);
+void Path::add(Extension * extension) {
+	length -= extension->overhangLen;
+	length += extension->extensionLen;
 
-	overlaps.push_back(overlap);
+	extensions.push_back(extension);
 }
 
-bool Path::removeLast(bool direction) {
-	Overlap* last = overlaps.back();
-	bool lastDirection = last->sameStrand;
+void Path::removeLast() {
+	Extension* last = extensions.back();
+	length += last->overhangLen;
+	length -= last->extensionLen;
 
-	length -= last->getExtensionLen(direction);
-	length += last->getOverhangLen(direction);
-
-	overlaps.pop_back();
-	return lastDirection;
+	extensions.pop_back();
 }
 
 void Path::finishPath() {
 	reads.push_back(start);
-	for (auto o : overlaps) {
-		reads.push_back(o->rightId);
+	for (auto e : extensions) {
+		reads.push_back(e->nextId);
 	}
 }
 

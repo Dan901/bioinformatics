@@ -4,9 +4,62 @@
 
 long MAX_PATH_LEN = 5000000;
 
-void Graph::insertOverlap(Overlap & overlap) {
-	rightExtensions[overlap.leftId].push_back(overlap);
-	leftExtensions[overlap.rightId].push_back(overlap);
+void Graph::insertExtensions(PafLine & line) {
+	Extension e1, e2;
+
+	e1.nextId = line.targetId;
+	e1.nextLen = line.targetLen;
+	e1.nextStart = line.targetStart;
+	e1.nextEnd = line.targetEnd;
+	e1.lastLen = line.queryLen;
+	e1.lastStart = line.queryStart;
+	e1.lastEnd = line.queryEnd;
+	e1.overlapScore = line.overlapScore;
+	e1.sameStrand = line.sameStrand;
+
+	e2.nextId = line.queryId;
+	e2.nextLen = line.queryLen;
+	e2.nextStart = line.queryStart;
+	e2.nextEnd = line.queryEnd;
+	e2.lastLen = line.targetLen;
+	e2.lastStart = line.targetStart;
+	e2.lastEnd = line.targetEnd;
+	e2.overlapScore = line.overlapScore;
+	e2.sameStrand = line.sameStrand;
+
+	if (line.extensionScore1 > line.extensionScore2) {
+		e1.extensionScore = line.extensionScore1;
+		e1.extensionLen = line.lengths[3];
+		e1.overhangLen = line.lengths[1];
+
+		e2.extensionScore = line.extensionScore3;
+		e2.extensionLen = line.lengths[0];
+		e2.overhangLen = line.lengths[2];
+
+		if (line.sameStrand) {
+			suffixes[line.queryId].push_back(e1);
+			prefixes[line.targetId].push_back(e2);
+		} else {
+			prefixes[line.queryId].push_back(e1);
+			suffixes[line.targetId].push_back(e2);
+		}
+	} else {
+		e1.extensionScore = line.extensionScore4;
+		e1.extensionLen = line.lengths[2];
+		e1.overhangLen = line.lengths[0];
+
+		e2.extensionScore = line.extensionScore2;
+		e2.extensionLen = line.lengths[1];
+		e2.overhangLen = line.lengths[3];
+
+		if (line.sameStrand) {
+			suffixes[line.queryId].push_back(e1);
+			suffixes[line.targetId].push_back(e2);
+		} else {
+			prefixes[line.queryId].push_back(e1);
+			prefixes[line.targetId].push_back(e2);
+		}
+	}
 }
 
 // get all paths from given starting node
@@ -15,11 +68,11 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 
 	for (auto extensionSelector : extensionSelectors) {
 		
-		for (std::vector<Overlap>::iterator first = rightExtensions[start].begin(); first != rightExtensions[start].end(); ++first) {
+		for (std::vector<Extension>::iterator first = suffixes[start].begin(); first != suffixes[start].end(); ++first) {
 			try {
-				Path path = dfs(&(*first), extensionSelector);
+				Path path = dfs(start, &(*first), extensionSelector);
 
-				if (!path.overlaps.empty()) {
+				if (!path.extensions.empty()) {
 					path.finishPath();
 					paths.push_back(std::move(path));
 				}
@@ -33,41 +86,52 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 }
 
 // construct path using DFS starting with given overlap
-Path Graph::dfs(Overlap * first, ExtensionSelector * extensionSelector) {
+Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extensionSelector) {
 	bool direction = first->sameStrand;
 
-	Path path(first->leftId, first->leftLen);
-	path.add(first, direction);
+	Path path(start, first->lastLen);
+	path.add(first);
 
 	std::unordered_set<std::string> visitedNodes;
-	visitedNodes.insert(first->leftId);
-	visitedNodes.insert(first->rightId);
+	visitedNodes.insert(start);
+	visitedNodes.insert(first->nextId);
 
-	while (!path.overlaps.empty()) {
+	while (!path.extensions.empty()) {
 		if (path.length > MAX_PATH_LEN) {
 			throw PathTooLongException();
 		}
 		
-		std::string current = path.overlaps.back()->rightId;
+		std::string current = path.extensions.back()->nextId;
 		if (contigIds.find(current) != contigIds.end()) {
 			return path;
 		}
 
-		Overlap* next = extensionSelector->getNextExtension(direction ? rightExtensions[current] : leftExtensions[current], visitedNodes);
+		Extension* next = extensionSelector->getNextExtension(direction ? suffixes[current] : prefixes[current], visitedNodes);
+		
 		if (!next) {
-			bool lastDirection = path.removeLast(direction);
-			if (!lastDirection) {
-				direction = !direction;
-			}
+			path.removeLast();
+			direction = getNextDirection(path);
 			continue;
 		}
 
-		if (!next->sameStrand) {
+		visitedNodes.insert(next->nextId);
+		path.add(next);
+		if (direction != next->sameStrand) {
 			direction = !direction;
 		}
-		path.add(next, direction);
-		visitedNodes.insert(next->rightId);
 	}
 
 	return path;
+}
+
+bool Graph::getNextDirection(Path & path) {
+	bool direction = true;
+
+	for (auto e : path.extensions) {
+		if (direction != e->sameStrand) {
+			direction = !direction;
+		}
+	}
+
+	return direction;
 }

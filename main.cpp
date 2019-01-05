@@ -12,6 +12,7 @@
 std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
 int EXTENSION_THRESHOLD = 0;
+int OVERLAP_THRESHOLD = 1000;
 
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
@@ -27,14 +28,14 @@ std::vector<std::string> split(std::string line, char delim) {
 
 // discard overlaps that are fully contained or have extension score below thershold
 // and fill contigIds set if it is not null
-std::vector<Overlap> readAndfilterOverlaps(std::string file, double threshold, std::unordered_set<std::string> * contigIds) {
+std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std::string> * contigIds) {
 	std::ifstream input(file);
 	std::string line;
-	std::vector<Overlap> filteredOverlaps;
+	std::vector<PafLine> filteredLines;
 
 	while (std::getline(input, line)) {
 		PafLine pafLine(split(line, '\t'));
-		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.getExtensionScore() < threshold) {
+		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.getBiggerExtensionScore() < EXTENSION_THRESHOLD || pafLine.overlapScore < OVERLAP_THRESHOLD) {
 			continue;
 		}
 
@@ -42,25 +43,25 @@ std::vector<Overlap> readAndfilterOverlaps(std::string file, double threshold, s
 			contigIds->insert(pafLine.queryId);
 		}
 
-		filteredOverlaps.emplace_back(pafLine);
+		filteredLines.push_back(pafLine);
 	}
 
-	return filteredOverlaps;
+	return filteredLines;
 }
 
 Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 	std::unordered_set<std::string> contigIds;
-	std::vector<Overlap> readContigOverlaps = readAndfilterOverlaps(READ_CONTIG_OVERLAPS_FILE, EXTENSION_THRESHOLD, &contigIds);
-	std::vector<Overlap> readOverlaps = readAndfilterOverlaps(READ_OVERLAPS_FILE, EXTENSION_THRESHOLD, nullptr);
+	std::vector<PafLine> readContigOverlaps = readAndFilterLines(READ_CONTIG_OVERLAPS_FILE, &contigIds);
+	std::vector<PafLine> readOverlaps = readAndFilterLines(READ_OVERLAPS_FILE, nullptr);
 
 	Graph graph(contigIds, extensionSelectors);
 
-	for (auto overlap : readContigOverlaps) {
-		graph.insertOverlap(overlap);
+	for (auto line : readContigOverlaps) {
+		graph.insertExtensions(line);
 	}
 
-	for (auto overlap : readOverlaps) {
-		graph.insertOverlap(overlap);
+	for (auto line : readOverlaps) {
+		graph.insertExtensions(line);
 	}
 
 	return graph;
@@ -91,14 +92,12 @@ int main() {
 
 	std::cout << std::endl << "Total paths:" << pathCount << std::endl;
 	std::cout << "Unique paths:" << uniquePaths.size() << std::endl << std::endl;
-	//for (auto path : uniquePaths) {
-	//	std::cout << path.start << " -> " << path.overlaps.back()->rightId << "\t" << path.overlaps.size() << "\t" << path.length << std::endl;
-	//}
+	for (auto path : uniquePaths) {
+		std::cout << path.start << " -> " << path.extensions.back()->nextId << "\t" << path.extensions.size() << "\t" << path.length << std::endl;
+	}
 
 	ConsensusGenerator gen;
 	gen.generateConsensus(uniquePaths);
-
-
 
 	std::cout << "End" << std::endl;
 	return 0;

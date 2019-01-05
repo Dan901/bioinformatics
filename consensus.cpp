@@ -32,7 +32,7 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 	std::map<std::pair<std::string, std::string>, std::vector<Path>> anchorNodePaths;
 
 	for (auto path : paths) {
-		anchorNodePaths[std::make_pair(path.start, path.overlaps.back()->rightId)].push_back(path);
+		anchorNodePaths[std::make_pair(path.start, path.extensions.back()->nextId)].push_back(path);
 	}
 
 	for (auto const& anchorNodePair : anchorNodePaths) {
