@@ -379,3 +379,7 @@ ASALocalRun/
 *.aux
 *.toc
 *.log
+
+#Visual code
+.vscode/
+
