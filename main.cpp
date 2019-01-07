@@ -6,11 +6,14 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
+#include <math.h>
 
+#include "anchor.h"
 #include "consensus.h"
 
 std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
+double CONFLICT_INDEX = 0.75; 
 int EXTENSION_THRESHOLD = 0;
 int OVERLAP_THRESHOLD = 1000;
 
@@ -98,6 +101,32 @@ int main() {
 
 	ConsensusGenerator gen;
 	gen.generateConsensus(uniquePaths);
+
+	std::map<std::string, Anchor> anchors;
+
+	for (auto group : gen.consensusGroups){
+		ConsensusGroup consensus = group.second.front();
+		Anchor anchor;
+		anchor.contig = group.first.first;
+		if(anchors.count(group.first.first)> 0){
+			anchor = anchors.find(group.first.first)->second;
+		}
+
+		if(consensus.validPathNumber > anchor.firstNP){
+			anchor.secondNP = anchor.firstNP;
+			anchor.firstNP = consensus.validPathNumber;
+		}else if(consensus.validPathNumber > anchor.firstNP){
+			anchor.secondNP = consensus.validPathNumber;
+		}
+
+		anchors.insert(std::make_pair(group.first.first, anchor));
+	}
+
+	for(auto anchor : anchors){
+		anchor.second.calculateConflictIndex();
+		std::cout << "Contig: "<< anchor.second.contig <<" Best NP: " << anchor.second.firstNP  << " Second best NP: " << anchor.second.secondNP << std::endl;
+		std::cout << "CI: " << anchor.second.conflictIndex << std::endl;
+	}
 
 	std::cout << "End" << std::endl;
 	return 0;
