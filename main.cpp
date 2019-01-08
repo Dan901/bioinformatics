@@ -87,9 +87,6 @@ int main() {
 		std::cout << "Paths from " << contig << ": " << paths.size() << std::endl;
 
 		for (auto path : paths) {
-			if (path.extensions.size() == 2) {
-				std::cout << "aaa";
-			}
 			pathCount++;
 			uniquePaths.insert(path);
 		}
