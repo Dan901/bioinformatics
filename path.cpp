@@ -18,8 +18,12 @@ void Path::removeLast() {
 void Path::finishPath() {
 	reads.push_back(start);
 	for (auto e : extensions) {
+		average_seq_id += e->sequenceId;
 		reads.push_back(e->nextId);
 	}
+	average_seq_id /= extensions.size();
+
+	length += extensions.front()->lastLen;
 }
 
 bool PathComparator::operator()(const Path & obj1, const Path & obj2) const {

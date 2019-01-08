@@ -1,16 +1,11 @@
 #include <map>
 #include "graph.h"
 
-enum GroupType { PEAK, VALLEY, NORMAL_ONE, NORMAL_MANY, DISCARDED };
-
 struct ConsensusGroup {
 	std::pair<std::string, std::string> nodePair;
 	std::vector<Path> paths;
 
-	int  validPathNumber;
-	long baseLength;
-
-	GroupType groupType;
+	double  validPathNumber;
 	Path consensusSequence;
 };
 
@@ -21,6 +16,7 @@ private:
 	const int WINDOW_SIZE  = 1000;
 
 	void createSingleGroup(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info);
+	void createMultipleGroups(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info);
 
 public:
 	std::map<std::pair<std::string, std::string>, std::vector<ConsensusGroup>> consensusGroups;

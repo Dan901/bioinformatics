@@ -50,8 +50,8 @@ void Graph::insertExtensions(PafLine & line) {
 	int overhangSum = e1.overhangLen + e2.overhangLen;
 	if (overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e1.extensionLen || overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e2.extensionLen) return;
 
-	if (line.extensionScore1 > line.extensionScore2) {
-		if (line.sameStrand) {
+	if (line.sameStrand) {
+		if (line.extensionScore1 > line.extensionScore2) {
 			suffixes[line.queryId].push_back(e1);
 			prefixes[line.targetId].push_back(e2);
 		} else {
@@ -59,7 +59,7 @@ void Graph::insertExtensions(PafLine & line) {
 			suffixes[line.targetId].push_back(e2);
 		}
 	} else {
-		if (line.sameStrand) {
+		if (line.extensionScore1 > line.extensionScore2) {
 			suffixes[line.queryId].push_back(e1);
 			suffixes[line.targetId].push_back(e2);
 		} else {
@@ -96,7 +96,7 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extensionSelector) {
 	bool direction = first->sameStrand;
 
-	Path path(start, first->lastLen);
+	Path path(start);
 	path.add(first);
 
 	std::unordered_set<std::string> visitedNodes;
@@ -104,13 +104,13 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 	visitedNodes.insert(first->nextId);
 
 	while (!path.extensions.empty()) {
-		if (path.length > MAX_PATH_LEN) {
-			throw PathTooLongException();
-		}
-		
 		std::string current = path.extensions.back()->nextId;
 		if (contigIds.find(current) != contigIds.end()) {
 			return path;
+		}
+
+		if (path.length > MAX_PATH_LEN) {
+			throw PathTooLongException();
 		}
 
 		Extension* next = extensionSelector->getNextExtension(direction ? suffixes[current] : prefixes[current], visitedNodes);

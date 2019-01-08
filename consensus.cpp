@@ -7,24 +7,25 @@
 void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info) {
 	ConsensusGroup consensus;
 
-	consensus.groupType	= NORMAL_ONE;
-	consensus.nodePair  = pair;
-	consensus.paths		= paths;
+	consensus.nodePair = pair;
+	consensus.paths	   = paths;
 
-	auto x = std::max_element(info.begin(), info.end(), [](const std::pair<long, std::pair<int, double>>& p1, const std::pair<long, std::pair<int, double>>& p2) {
-		return p1.second.first < p2.second.first; 
+	auto consensusSequence = std::max_element(paths.begin(), paths.end(), [](const Path& p1, const Path&p2) {
+		return p1.average_seq_id < p2.average_seq_id;
 	});
 
-	consensus.baseLength	  = x->first;
-	consensus.validPathNumber = x->second.first;
+	consensus.consensusSequence = *consensusSequence;
+	consensus.validPathNumber   =  consensusSequence->average_seq_id;
 
-	for (auto path : paths) {
-		if (path.length == consensus.baseLength) {
-			consensus.consensusSequence = path;
-			break;
-		}
-	}
 	this->consensusGroups[pair].push_back(consensus);
+}
+
+void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info) {
+	//auto x = std::max_element(info.begin(), info.end(), [](const std::pair<long, std::pair<int, double>>& p1, const std::pair<long, std::pair<int, double>>& p2) {
+	//	return p1.second.first < p2.second.first; 
+	//});
+
+
 }
 
 void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, PathComparator>& paths) {
@@ -63,7 +64,7 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 			//discard completely
 		}
 		else {
-			createSingleGroup(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
+			createMultipleGroups(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
 		}
 
  		std::cout << std::endl;

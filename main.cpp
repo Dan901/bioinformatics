@@ -11,8 +11,8 @@
 #include "anchor.h"
 #include "consensus.h"
 
-std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
-std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
+std::string READ_CONTIG_OVERLAPS_FILE = "data/CJejuni/overlaps_reads_contigs.paf";
+std::string READ_OVERLAPS_FILE = "data/CJejuni/overlaps_reads.paf";
 double CONFLICT_INDEX = 0.75; 
 int OVERLAP_THRESHOLD = 1000;
 
@@ -87,6 +87,9 @@ int main() {
 		std::cout << "Paths from " << contig << ": " << paths.size() << std::endl;
 
 		for (auto path : paths) {
+			if (path.extensions.size() == 2) {
+				std::cout << "aaa";
+			}
 			pathCount++;
 			uniquePaths.insert(path);
 		}
