@@ -11,8 +11,8 @@
 #include "anchor.h"
 #include "consensus.h"
 
-std::string READ_CONTIG_OVERLAPS_FILE = "data/CJejuni/overlaps_reads_contigs.paf";
-std::string READ_OVERLAPS_FILE = "data/CJejuni/overlaps_reads.paf";
+std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
+std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
 double CONFLICT_INDEX = 0.75; 
 int OVERLAP_THRESHOLD = 1000;
 
