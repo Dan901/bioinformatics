@@ -15,6 +15,7 @@ public:
 
 	int lengths[4];
 
+	double sequenceId;
 	double overlapScore;
 	double extensionScore1;
 	double extensionScore2;
@@ -24,10 +25,9 @@ public:
 	PafLine(std::vector<std::string> elements);
 
 	bool isFullyContained();
-	double getBiggerExtensionScore();
 
 private:
-	double calculateOverlapScore(double si);
+	double calculateOverlapScore();
 	double calculateExtensionScore1();
 	double calculateExtensionScore2();
 	double calculateExtensionScore3();

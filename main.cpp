@@ -14,7 +14,6 @@
 std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
 double CONFLICT_INDEX = 0.75; 
-int EXTENSION_THRESHOLD = 0;
 int OVERLAP_THRESHOLD = 1000;
 
 std::vector<std::string> split(std::string line, char delim) {
@@ -38,11 +37,11 @@ std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std
 
 	while (std::getline(input, line)) {
 		PafLine pafLine(split(line, '\t'));
-		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.getBiggerExtensionScore() < EXTENSION_THRESHOLD || pafLine.overlapScore < OVERLAP_THRESHOLD) {
+		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.overlapScore < OVERLAP_THRESHOLD) {
 			continue;
 		}
 
-		if (contigIds != nullptr) {
+		if (contigIds) {
 			contigIds->insert(pafLine.queryId);
 		}
 

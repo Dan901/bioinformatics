@@ -12,7 +12,8 @@ PafLine::PafLine(std::vector<std::string> elements) {
 	targetLen = std::stoi(elements[6]);
 	targetStart = std::stoi(elements[7]);
 	targetEnd = std::stoi(elements[8]);
-	overlapScore = calculateOverlapScore((double)std::stoi(elements[9]) / std::stoi(elements[10]));
+	sequenceId = (double)std::stoi(elements[9]) / std::stoi(elements[10]);
+	overlapScore = calculateOverlapScore();
 
 	lengths[0] = queryStart;
 	lengths[1] = queryLen - queryEnd - 1;
@@ -30,14 +31,10 @@ bool PafLine::isFullyContained() {
 		((lengths[2] >= lengths[0]) && (lengths[3] >= lengths[1]));
 }
 
-double PafLine::getBiggerExtensionScore() {
-	return extensionScore1 > extensionScore2 ? extensionScore1 : extensionScore2;
-}
-
-double PafLine::calculateOverlapScore(double si) {
+double PafLine::calculateOverlapScore() {
 	double ol1 = queryEnd - queryStart;
 	double ol2 = targetEnd - targetStart;
-	return (ol1 + ol2) * si / 2;
+	return (ol1 + ol2) * sequenceId / 2;
 }
 
 double PafLine::calculateExtensionScore1() {

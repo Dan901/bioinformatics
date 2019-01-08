@@ -12,6 +12,7 @@ struct Extension {
 
 	bool sameStrand;
 
+	double sequenceId;
 	double overlapScore;
 	double extensionScore;
 	int extensionLen;

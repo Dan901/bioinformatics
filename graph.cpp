@@ -2,8 +2,6 @@
 #include <iostream>
 #include "graph.h"
 
-long MAX_PATH_LEN = 5000000;
-
 void Graph::insertExtensions(PafLine & line) {
 	Extension e1, e2;
 
@@ -16,6 +14,7 @@ void Graph::insertExtensions(PafLine & line) {
 	e1.lastEnd = line.queryEnd;
 	e1.overlapScore = line.overlapScore;
 	e1.sameStrand = line.sameStrand;
+	e1.sequenceId = line.sequenceId;
 
 	e2.nextId = line.queryId;
 	e2.nextLen = line.queryLen;
@@ -26,6 +25,7 @@ void Graph::insertExtensions(PafLine & line) {
 	e2.lastEnd = line.targetEnd;
 	e2.overlapScore = line.overlapScore;
 	e2.sameStrand = line.sameStrand;
+	e2.sequenceId = line.sequenceId;
 
 	if (line.extensionScore1 > line.extensionScore2) {
 		e1.extensionScore = line.extensionScore1;
@@ -35,14 +35,6 @@ void Graph::insertExtensions(PafLine & line) {
 		e2.extensionScore = line.extensionScore3;
 		e2.extensionLen = line.lengths[0];
 		e2.overhangLen = line.lengths[2];
-
-		if (line.sameStrand) {
-			suffixes[line.queryId].push_back(e1);
-			prefixes[line.targetId].push_back(e2);
-		} else {
-			prefixes[line.queryId].push_back(e1);
-			suffixes[line.targetId].push_back(e2);
-		}
 	} else {
 		e1.extensionScore = line.extensionScore4;
 		e1.extensionLen = line.lengths[2];
@@ -51,7 +43,22 @@ void Graph::insertExtensions(PafLine & line) {
 		e2.extensionScore = line.extensionScore2;
 		e2.extensionLen = line.lengths[1];
 		e2.overhangLen = line.lengths[3];
+	}
 
+	if (e1.overhangLen >= MAX_OVERHANG || e2.overhangLen >= MAX_OVERHANG) return;
+	if (e1.extensionLen < MAX_OVERHANG || e2.extensionLen < MAX_OVERHANG) return;
+	int overhangSum = e1.overhangLen + e2.overhangLen;
+	if (overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e1.extensionLen || overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e2.extensionLen) return;
+
+	if (line.extensionScore1 > line.extensionScore2) {
+		if (line.sameStrand) {
+			suffixes[line.queryId].push_back(e1);
+			prefixes[line.targetId].push_back(e2);
+		} else {
+			prefixes[line.queryId].push_back(e1);
+			suffixes[line.targetId].push_back(e2);
+		}
+	} else {
 		if (line.sameStrand) {
 			suffixes[line.queryId].push_back(e1);
 			suffixes[line.targetId].push_back(e2);

@@ -7,7 +7,7 @@
 
 struct Path {
 	std::string start;
-	long length;
+	long length = 0;
 	std::vector<Extension*> extensions;
 	std::vector<std::string> reads;
 

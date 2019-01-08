@@ -23,6 +23,10 @@ public:
 	std::vector<Path> constructPaths(std::string start);
 
 private:
+	const long MAX_PATH_LEN = 5000000;
+	const int MAX_OVERHANG = 1000;
+	const double MAX_OVERHANG_EXTENSION_RATIO = 0.2;
+
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;
 	std::unordered_map<std::string, std::vector<Extension>> suffixes;
 
