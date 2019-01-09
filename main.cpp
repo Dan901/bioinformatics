@@ -7,12 +7,16 @@
 #include <unordered_map>
 #include <algorithm>
 #include <math.h>
-
-#include "anchor.h"
+#include<map>
 #include "consensus.h"
+#include "connection.h"
 
 std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
+std::string CONTIGS_FILE = "data/EColi/ecoli_test_contigs.fasta";
+std::string READS_FILE = "data/EColi/ecoli_test_reads.fasta";
+std::string OUTPUT_GENOME = "data/EColi/output.fasta";
+std::string DNA_NAME = "EColi/n";
 double CONFLICT_INDEX = 0.75; 
 int OVERLAP_THRESHOLD = 1000;
 
@@ -69,6 +73,44 @@ Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 	return graph;
 }
 
+//contig
+std::map<std::string, std::string> readFasta(std:: string file){
+	std::ifstream input(file);
+	std::string line;
+	std::map<std::string, std::string> output;
+
+	bool data = false;
+	std::string name;
+	std::string bases;
+	while(std::getline(input, line)){
+		if(data){
+			bases = line;
+			output[name] = bases;
+		}else {
+			name = line.substr(1,line.size());
+		}
+		data =!data;
+	}
+	return output;
+}
+
+std::string invertDNA(std::string toInvert){
+	std::string inverted;
+    for(auto dnaChar : toInvert){
+        switch(dnaChar){
+            case 'A' : inverted = "T" + inverted;
+                break;
+            case 'T' : inverted = "A" + inverted;
+                break;
+            case 'C' : inverted = "G" + inverted;
+                break;
+            case 'G' : inverted = "C" + inverted;
+                break;
+        }
+    }
+	return inverted;
+}
+
 int main() {
 	BestExtensionSelector bestOS = BestExtensionSelector(compareByOverlapScore);
 	BestExtensionSelector bestES = BestExtensionSelector(compareByExtensionScore);
@@ -100,32 +142,111 @@ int main() {
 
 	ConsensusGenerator gen;
 	gen.generateConsensus(uniquePaths);
-
-	std::map<std::string, Anchor> anchors;
+	
+	//as there can be more conections stemming from the same contig
+	std::map<std::string, std::vector<Connection>> connections;
+	//Resolved contig and its connection to the nest contig
+	std::map<std::string, Connection> pathConnection;
 
 	for (auto group : gen.consensusGroups){
-		ConsensusGroup consensus = group.second.front();
-		Anchor anchor;
-		anchor.contig = group.first.first;
-		if(anchors.count(group.first.first)> 0){
-			anchor = anchors.find(group.first.first)->second;
-		}
-
-		if(consensus.validPathNumber > anchor.firstNP){
-			anchor.secondNP = anchor.firstNP;
-			anchor.firstNP = consensus.validPathNumber;
-		}else if(consensus.validPathNumber > anchor.firstNP){
-			anchor.secondNP = consensus.validPathNumber;
-		}
-
-		anchors.insert(std::make_pair(group.first.first, anchor));
+		std::cout << "First group of contigs" << group.first.first << group.first.second<< std::endl;
+		Connection connection;
+		connection.contigId = group.first.second;
+		connection.validPathNumber = group.second.front().validPathNumber;
+		connection.path = group.second.front().consensusSequence;
+		connections[group.first.first].push_back(connection);
 	}
 
-	for(auto anchor : anchors){
-		anchor.second.calculateConflictIndex();
-		std::cout << "Contig: "<< anchor.second.contig <<" Best NP: " << anchor.second.firstNP  << " Second best NP: " << anchor.second.secondNP << std::endl;
-		std::cout << "CI: " << anchor.second.conflictIndex << std::endl;
+	//choose the best path if more contigs go to the same one
+	//TODO what if there is one contige whose two
+	for(auto connectionPair : connections){
+		Connection best = connectionPair.second.front();
+		for(auto connection : connectionPair.second){
+			if(best.validPathNumber < connection.validPathNumber){
+				best = connection;
+			}
+		}
+		std::cout << "Contig pair" << connectionPair.first << "-" << best.contigId << std::endl;
+		pathConnection[connectionPair.first] = best;
 	}
+
+	//TODO cycle for broken contig connections
+
+// FIX wrong 
+	std::string firstContig;
+	bool first = true;
+	for(auto contig : graph.contigIds){
+		for(auto connection : pathConnection){
+			if(connection.second.contigId == contig){
+				first = false;
+			}
+		}
+		if(first){
+			firstContig = contig;
+		}
+		first = true;
+	}
+
+	std::cout << "First contig in the chain: " << firstContig << std::endl;
+
+	std::cout << "Reading contigs ..." << std::endl;
+	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE);
+	std::cout << "Done reading contigs."<< std::endl;
+
+	std::cout << "Reading reads ..." << std::endl;
+	std::map<std::string, std::string> reads = readFasta(READS_FILE);
+	std::cout << "Done reading reads."<< std::endl;
+
+	std::string nextContig = firstContig;
+	std::ofstream output;
+	output.open(OUTPUT_GENOME);
+	output << DNA_NAME ;
+	bool isFirst = true;
+	int lastExtensionStart = 0;
+	int lastExtensionEnd = -1;
+	int lastExtensionLength = -1;
+	int sameStrand = true;
+	int inverted = false;
+	std::string lastReadId;
+
+	while(pathConnection.find(nextContig) != pathConnection.end()){
+		Connection connection = pathConnection[nextContig];
+		std::cout<< "Currently resolving contig connection: " << nextContig << "-" << connection.contigId << std::endl;
+		for(auto extension : connection.path.extensions){
+			if(isFirst){
+				if(!inverted){
+					output << (contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart);
+				}else{
+					output<< invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart));
+				}
+				isFirst = false;
+			}else{
+				if(!inverted){
+					output << (reads.find(lastReadId)->second).substr(lastExtensionStart,extension->lastStart);
+				}else{
+					output << invertDNA((reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart));
+				}
+			}
+			lastExtensionStart = extension->nextStart;
+			lastExtensionEnd = extension->nextEnd;
+			lastReadId = extension->nextId;
+			lastExtensionLength = extension->nextLen;
+			sameStrand = extension->sameStrand;
+			if(!sameStrand){
+				inverted = !inverted;
+			}
+		}
+		isFirst = true;
+		nextContig = connection.contigId;
+		output.flush();
+	}
+	if(!inverted){
+		output << (contigs.find(nextContig)->second).substr(lastExtensionStart,lastExtensionLength);
+	}else{
+		output << invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart,lastExtensionLength));
+	}
+
+	output.close();
 
 	std::cout << "End" << std::endl;
 	return 0;
