@@ -21,7 +21,7 @@ std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
 std::string OUTPUT_GENOME = FOLDER + "output9.fasta";
 
 int OVERLAP_THRESHOLD = 1000;
-double SEQUENCE_IDENTITY_THRESHOLD = 0.2;
+double SEQUENCE_IDENTITY_THRESHOLD = 0.3;
 
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
