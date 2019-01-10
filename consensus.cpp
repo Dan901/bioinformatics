@@ -3,12 +3,12 @@
 #include <iostream>
 #include <algorithm>
 #include <limits>
+#include <cmath>
 
 void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info) {
 	ConsensusGroup consensus;
 
 	consensus.nodePair = pair;
-	consensus.paths	   = paths;
 
 	auto consensusSequence = std::max_element(paths.begin(), paths.end(), [](const Path& p1, const Path&p2) {
 		return p1.average_seq_id < p2.average_seq_id;
@@ -17,14 +17,18 @@ void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> p
 	consensus.consensusSequence = *consensusSequence;
 	consensus.validPathNumber   =  consensusSequence->average_seq_id;
 
+	auto highest_frequency = std::max_element(info.begin(), info.end(), [](const std::pair<long, std::pair<int, double>>& p1, const std::pair<long, std::pair<int, double>>& p2) {
+		return p1.second.second < p2.second.second; 
+	});
+	double frequency_threshold = highest_frequency->second.second / 2;
+
+	std::copy_if(paths.begin(), paths.end(), std::back_inserter(consensus.paths), [frequency_threshold, info](const Path& p) {
+		return info.at(p.length).second >= frequency_threshold;
+	});
 	this->consensusGroups[pair].push_back(consensus);
 }
 
 void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info) {
-	//auto x = std::max_element(info.begin(), info.end(), [](const std::pair<long, std::pair<int, double>>& p1, const std::pair<long, std::pair<int, double>>& p2) {
-	//	return p1.second.first < p2.second.first; 
-	//});
-
 
 }
 
@@ -45,7 +49,7 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 			if (path.length > max_length) {
 				max_length = path.length;
 			}
-			else if (path.length < min_length) {
+			if (path.length < min_length) {
 				min_length = path.length;
 			}
 			pathLengthFrequencies[path.length].first++;
