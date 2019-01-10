@@ -33,9 +33,6 @@
     <ClCompile Include="extension.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="anchor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graph.h">
@@ -53,7 +50,7 @@
     <ClInclude Include="extension.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="anchor.h">
+    <ClInclude Include="connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

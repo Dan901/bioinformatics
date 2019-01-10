@@ -2,6 +2,8 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <random>
+#include <ctime>
 #include "paf.h"
 #include "path.h"
 
@@ -17,21 +19,27 @@ public:
 	std::unordered_set<std::string> contigIds;
 	std::vector<ExtensionSelector*> extensionSelectors;
 
-	Graph(std::unordered_set<std::string> contigIds, std::vector<ExtensionSelector*> extensionSelectors) : contigIds(contigIds), extensionSelectors(extensionSelectors) {}
+	Graph(std::unordered_set<std::string> contigIds, std::vector<ExtensionSelector*> extensionSelectors) : contigIds(contigIds), extensionSelectors(extensionSelectors), randomEngine(std::default_random_engine(time(0))) {}
 
 	void insertExtensions(PafLine& line);
 	std::vector<Path> constructPaths(std::string start);
 
 private:
-	const long MAX_PATH_LEN = 300000;
+	const long MAX_PATH_LEN = 900000;
 	const int MAX_OVERHANG = 1000;
+	const int MIN_EXTENSION = 1000;
 	const double MAX_OVERHANG_EXTENSION_RATIO = 0.2;
+	const int RANDOM_PATH_TRIALS = 200;
 
+	std::default_random_engine randomEngine;
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;
 	std::unordered_map<std::string, std::vector<Extension>> suffixes;
 
 	Path dfs(std::string start, Extension* first, ExtensionSelector* extensionSelector);
+	Path randomPath(std::string start);
+	Extension* getRandomExtension(std::vector<Extension>& extensions, std::unordered_set<std::string>& visitedNodes);
 	bool getNextDirection(Path& path);
+	Extension* findExtensionToContig(std::vector<Extension> & extensions, std::string start);
 };
 
 template <typename Compare>
