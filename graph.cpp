@@ -45,8 +45,8 @@ void Graph::insertExtensions(PafLine & line) {
 		e2.overhangLen = line.lengths[3];
 	}
 
-	if (e1.overhangLen >= MAX_OVERHANG || e2.overhangLen >= MAX_OVERHANG) return;
-	if (e1.extensionLen < MAX_OVERHANG || e2.extensionLen < MAX_OVERHANG) return;
+	//if (e1.overhangLen >= MAX_OVERHANG || e2.overhangLen >= MAX_OVERHANG) return;
+	//if (e1.extensionLen < MIN_EXTENSION || e2.extensionLen < MIN_EXTENSION) return;
 	int overhangSum = e1.overhangLen + e2.overhangLen;
 	if (overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e1.extensionLen || overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e2.extensionLen) return;
 
@@ -74,18 +74,28 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 	std::vector<Path> paths;
 
 	for (auto extensionSelector : extensionSelectors) {
-		
 		for (std::vector<Extension>::iterator first = suffixes[start].begin(); first != suffixes[start].end(); ++first) {
 			try {
 				Path path = dfs(start, &(*first), extensionSelector);
+				if (path.extensions.empty()) continue;
 
-				if (!path.extensions.empty()) {
-					path.finishPath();
-					paths.push_back(std::move(path));
-				}
+				path.finishPath();
+				paths.push_back(std::move(path));
 			} catch (PathTooLongException& e) {
 				continue;
 			}
+		}
+	}
+
+	for (int i = 0; i < RANDOM_PATH_TRIALS; i++) {
+		try {
+			Path path = randomPath(start);
+			if (path.extensions.empty() || contigIds.find(path.extensions.back()->nextId) == contigIds.end()) continue;
+
+			path.finishPath();
+			paths.push_back(std::move(path));
+		} catch (PathTooLongException& e) {
+			continue;
 		}
 	}
 
@@ -105,7 +115,11 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 
 	while (!path.extensions.empty()) {
 		std::string current = path.extensions.back()->nextId;
-		if (contigIds.find(current) != contigIds.end()) {
+		std::vector<Extension>& candidates = direction ? suffixes[current] : prefixes[current];
+
+		Extension* next = findExtensionToContig(candidates, start);
+		if (next) {
+			path.add(next);
 			return path;
 		}
 
@@ -113,22 +127,83 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 			throw PathTooLongException();
 		}
 
-		Extension* next = extensionSelector->getNextExtension(direction ? suffixes[current] : prefixes[current], visitedNodes);
-		
-		if (!next) {
-			path.removeLast();
-			direction = getNextDirection(path);
+		next = extensionSelector->getNextExtension(candidates, visitedNodes);
+
+		if (next) {
+			visitedNodes.insert(next->nextId);
+			path.add(next);
+
+			if (direction != next->sameStrand) {
+				direction = !direction;
+			}
+
 			continue;
 		}
 
-		visitedNodes.insert(next->nextId);
+		path.removeLast();
+		direction = getNextDirection(path);
+	}
+
+	return path;
+}
+
+Path Graph::randomPath(std::string start) {
+	Path path(start);
+	bool direction = true;
+	std::string current = start;
+
+	std::unordered_set<std::string> visitedNodes;
+	visitedNodes.insert(start);
+
+	while (true) {
+		std::vector<Extension>& candidates = direction ? suffixes[current] : prefixes[current];
+
+		Extension* next = findExtensionToContig(candidates, start);
+		if (next) {
+			path.add(next);
+			return path;
+		}
+
+		if (path.length > MAX_PATH_LEN) {
+			throw PathTooLongException();
+		}
+
+		next = getRandomExtension(candidates, visitedNodes);
+		if (!next) return path;
+
 		path.add(next);
+		current = next->nextId;
+		visitedNodes.insert(current);
+
 		if (direction != next->sameStrand) {
 			direction = !direction;
 		}
 	}
+}
 
-	return path;
+Extension * Graph::getRandomExtension(std::vector<Extension>& extensions, std::unordered_set<std::string>& visitedNodes) {
+	std::vector<Extension*> candidates;
+	for (auto & e : extensions) {
+		if (visitedNodes.find(e.nextId) != visitedNodes.end()) continue;
+		candidates.push_back(&e);
+	}
+
+	if (candidates.empty()) return nullptr;
+
+	double scoreSum = 0;
+	for (auto * e : candidates) {
+		scoreSum += e->extensionScore;
+	}
+
+	std::uniform_real_distribution<double> unif(0, scoreSum);
+	double random = unif(randomEngine);
+
+	for (auto * e : candidates) {
+		if (random <= e->extensionScore) return e;
+		random -= e->extensionScore;
+	}
+
+	return candidates.back();
 }
 
 bool Graph::getNextDirection(Path & path) {
@@ -141,4 +216,16 @@ bool Graph::getNextDirection(Path & path) {
 	}
 
 	return direction;
+}
+
+// returns extension to contig if it exists or nullptr
+Extension * Graph::findExtensionToContig(std::vector<Extension>& extensions, std::string start) {
+	for (auto & e : extensions) {
+		if (e.nextId == start) continue;
+		if (contigIds.find(e.nextId) != contigIds.end()) {
+			return &e;
+		}
+	}
+
+	return nullptr;
 }

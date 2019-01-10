@@ -7,18 +7,22 @@
 #include <unordered_map>
 #include <algorithm>
 #include <math.h>
-#include<map>
+#include <map>
 #include "consensus.h"
 #include "connection.h"
 
-std::string READ_CONTIG_OVERLAPS_FILE = "data/CJejuni/overlaps_reads_contigs.paf";
-std::string READ_OVERLAPS_FILE = "data/CJejuni/overlaps_reads.paf";
-std::string CONTIGS_FILE = "data/CJejuni/CJejuni - contigs.fasta";
-std::string READS_FILE = "data/CJejuni/CJejuni - reads.fastq";
-std::string OUTPUT_GENOME = "data/CJejuni/output.fasta";
 std::string DNA_NAME = ">CJejuni\n";
-double CONFLICT_INDEX = 0.75; 
+std::string FOLDER = "data/CJejuni/";
+std::string CONTIGS_FILE = FOLDER + "CJejuni - contigs.fasta";
+std::string READS_FILE = FOLDER + "CJejuni - reads.fastq";
+
+std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
+std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
+std::string OUTPUT_GENOME = FOLDER + "output.fasta";
+
+double CONFLICT_INDEX = 0.75;
 int OVERLAP_THRESHOLD = 1000;
+double SEQUENCE_IDENTITY_THRESHOLD = 0.2;
 
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
@@ -41,7 +45,7 @@ std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std
 
 	while (std::getline(input, line)) {
 		PafLine pafLine(split(line, '\t'));
-		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.overlapScore < OVERLAP_THRESHOLD) {
+		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.overlapScore < OVERLAP_THRESHOLD || pafLine.sequenceId < SEQUENCE_IDENTITY_THRESHOLD) {
 			continue;
 		}
 
@@ -74,7 +78,7 @@ Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 }
 
 //contig
-std::map<std::string, std::string> readFasta(std:: string file, bool realFasta){
+std::map<std::string, std::string> readFasta(std::string file, bool realFasta) {
 	std::ifstream input(file);
 	std::string line;
 	std::map<std::string, std::string> output;
@@ -83,39 +87,39 @@ std::map<std::string, std::string> readFasta(std:: string file, bool realFasta){
 	std::string name;
 	std::string bases;
 	int skip = 0;
-	while(std::getline(input, line)){
-		if(skip > 0){
+	while (std::getline(input, line)) {
+		if (skip > 0) {
 			skip--;
 			continue;
 		}
-		if(data){
+		if (data) {
 			bases = line;
 			output[name] = bases;
-			if(realFasta){
+			if (realFasta) {
 				skip = 2;
 			}
-		}else {
-			name = line.substr(1,line.size());
+		} else {
+			name = line.substr(1, line.size());
 		}
-		data =!data;
+		data = !data;
 	}
 	return output;
 }
 
-std::string invertDNA(std::string toInvert){
+std::string invertDNA(std::string toInvert) {
 	std::string inverted;
-    for(auto dnaChar : toInvert){
-        switch(dnaChar){
-            case 'A' : inverted = "T" + inverted;
-                break;
-            case 'T' : inverted = "A" + inverted;
-                break;
-            case 'C' : inverted = "G" + inverted;
-                break;
-            case 'G' : inverted = "C" + inverted;
-                break;
-        }
-    }
+	for (auto dnaChar : toInvert) {
+		switch (dnaChar) {
+		case 'A': inverted = "T" + inverted;
+			break;
+		case 'T': inverted = "A" + inverted;
+			break;
+		case 'C': inverted = "G" + inverted;
+			break;
+		case 'G': inverted = "C" + inverted;
+			break;
+		}
+	}
 	return inverted;
 }
 
@@ -150,14 +154,14 @@ int main() {
 
 	ConsensusGenerator gen;
 	gen.generateConsensus(uniquePaths);
-	
+
 	//as there can be more conections stemming from the same contig
 	std::map<std::string, std::vector<Connection>> connections;
 	//Resolved contig and its connection to the nest contig
 	std::map<std::string, Connection> pathConnection;
 
-	for (auto group : gen.consensusGroups){
-		std::cout << "First group of contigs" << group.first.first << group.first.second<< std::endl;
+	for (auto group : gen.consensusGroups) {
+		std::cout << "First group of contigs" << group.first.first << group.first.second << std::endl;
 		Connection connection;
 		connection.contigId = group.first.second;
 		connection.validPathNumber = group.second.front().validPathNumber;
@@ -167,11 +171,11 @@ int main() {
 
 	//choose the best path if more contigs go to the same one
 	//TODO what if there is one contige whose two
-	for(auto connectionPair : connections){
+	for (auto connectionPair : connections) {
 		Connection best = connectionPair.second.front();
-		for(auto connection : connectionPair.second){
+		for (auto connection : connectionPair.second) {
 			std::cout << "Contig " << connectionPair.first << "and contig's " << connection.contigId << "is" << connection.validPathNumber << std::endl;
-			if(best.validPathNumber < connection.validPathNumber){
+			if (best.validPathNumber < connection.validPathNumber) {
 				best = connection;
 			}
 		}
@@ -181,16 +185,16 @@ int main() {
 
 	//TODO cycle for broken contig connections
 
-// FIX wrong 
+	// FIX wrong 
 	std::string firstContig;
 	bool first = true;
-	for(auto contig : graph.contigIds){
-		for(auto connection : pathConnection){
-			if(connection.second.contigId == contig){
+	for (auto contig : graph.contigIds) {
+		for (auto connection : pathConnection) {
+			if (connection.second.contigId == contig) {
 				first = false;
 			}
 		}
-		if(first){
+		if (first) {
 			firstContig = contig;
 		}
 		first = true;
@@ -200,17 +204,17 @@ int main() {
 
 	std::cout << "Reading contigs ..." << std::endl;
 	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE, false);
-	std::cout << "Done reading contigs."<< std::endl;
+	std::cout << "Done reading contigs." << std::endl;
 
 	std::cout << "Reading reads ..." << std::endl;
-	std::map<std::string, std::string> reads = readFasta(READS_FILE, true);
-	std::cout << "Done reading reads."<< std::endl;
+	std::map<std::string, std::string> reads = readFasta(READS_FILE, false);
+	std::cout << "Done reading reads." << std::endl;
 
 
 	std::string nextContig = firstContig;
 	std::ofstream output;
 	output.open(OUTPUT_GENOME);
-	output << DNA_NAME ;
+	output << DNA_NAME;
 	bool isFirst = true;
 	int lastExtensionStart = 0;
 	int lastExtensionEnd = -1;
@@ -219,21 +223,21 @@ int main() {
 	int inverted = false;
 	std::string lastReadId;
 
-	while(pathConnection.find(nextContig) != pathConnection.end()){
+	while (pathConnection.find(nextContig) != pathConnection.end()) {
 		Connection connection = pathConnection[nextContig];
-		std::cout<< "Currently resolving contig connection: " << nextContig << "-" << connection.contigId << std::endl;
-		for(auto extension : connection.path.extensions){
-			if(isFirst){
-				if(!inverted){
-					output << (contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart);
-				}else{
-					output << invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart));
+		std::cout << "Currently resolving contig connection: " << nextContig << "-" << connection.contigId << std::endl;
+		for (auto extension : connection.path.extensions) {
+			if (isFirst) {
+				if (!inverted) {
+					output << (contigs.find(nextContig)->second).substr(lastExtensionStart, extension->lastStart);
+				} else {
+					output << invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart, extension->lastStart));
 				}
 				isFirst = false;
-			}else{
-				if(!inverted){
-					output << (reads.find(lastReadId)->second).substr(lastExtensionStart,extension->lastStart);
-				}else{
+			} else {
+				if (!inverted) {
+					output << (reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart);
+				} else {
 					output << invertDNA((reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart));
 				}
 			}
@@ -242,7 +246,7 @@ int main() {
 			lastReadId = extension->nextId;
 			lastExtensionLength = extension->nextLen;
 			sameStrand = extension->sameStrand;
-			if(!sameStrand){
+			if (!sameStrand) {
 				inverted = !inverted;
 			}
 		}
@@ -250,10 +254,10 @@ int main() {
 		nextContig = connection.contigId;
 		output.flush();
 	}
-	if(!inverted){
-		output << (contigs.find(nextContig)->second).substr(lastExtensionStart,lastExtensionLength);
-	}else{
-		output << invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart,lastExtensionLength));
+	if (!inverted) {
+		output << (contigs.find(nextContig)->second).substr(lastExtensionStart, lastExtensionLength);
+	} else {
+		output << invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart, lastExtensionLength));
 	}
 
 	output.close();

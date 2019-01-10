@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="anchor.cpp" />
     <ClCompile Include="consensus.cpp" />
     <ClCompile Include="extension.cpp" />
     <ClCompile Include="graph.cpp" />
@@ -28,7 +27,7 @@
     <ClCompile Include="path.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="anchor.h" />
+    <ClInclude Include="connection.h" />
     <ClInclude Include="consensus.h" />
     <ClInclude Include="extension.h" />
     <ClInclude Include="graph.h" />
