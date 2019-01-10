@@ -11,12 +11,12 @@
 #include "consensus.h"
 #include "connection.h"
 
-std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
-std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
-std::string CONTIGS_FILE = "data/EColi/ecoli_test_contigs.fasta";
-std::string READS_FILE = "data/EColi/ecoli_test_reads.fasta";
-std::string OUTPUT_GENOME = "data/EColi/output.fasta";
-std::string DNA_NAME = "EColi/n";
+std::string READ_CONTIG_OVERLAPS_FILE = "data/CJejuni/overlaps_reads_contigs.paf";
+std::string READ_OVERLAPS_FILE = "data/CJejuni/overlaps_reads.paf";
+std::string CONTIGS_FILE = "data/CJejuni/CJejuni - contigs.fasta";
+std::string READS_FILE = "data/CJejuni/CJejuni - reads.fastq";
+std::string OUTPUT_GENOME = "data/CJejuni/output.fasta";
+std::string DNA_NAME = ">CJejuni\n";
 double CONFLICT_INDEX = 0.75; 
 int OVERLAP_THRESHOLD = 1000;
 
@@ -74,7 +74,7 @@ Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 }
 
 //contig
-std::map<std::string, std::string> readFasta(std:: string file){
+std::map<std::string, std::string> readFasta(std:: string file, bool realFasta){
 	std::ifstream input(file);
 	std::string line;
 	std::map<std::string, std::string> output;
@@ -82,10 +82,18 @@ std::map<std::string, std::string> readFasta(std:: string file){
 	bool data = false;
 	std::string name;
 	std::string bases;
+	int skip = 0;
 	while(std::getline(input, line)){
+		if(skip > 0){
+			skip--;
+			continue;
+		}
 		if(data){
 			bases = line;
 			output[name] = bases;
+			if(realFasta){
+				skip = 2;
+			}
 		}else {
 			name = line.substr(1,line.size());
 		}
@@ -162,6 +170,7 @@ int main() {
 	for(auto connectionPair : connections){
 		Connection best = connectionPair.second.front();
 		for(auto connection : connectionPair.second){
+			std::cout << "Contig " << connectionPair.first << "and contig's " << connection.contigId << "is" << connection.validPathNumber << std::endl;
 			if(best.validPathNumber < connection.validPathNumber){
 				best = connection;
 			}
@@ -190,12 +199,13 @@ int main() {
 	std::cout << "First contig in the chain: " << firstContig << std::endl;
 
 	std::cout << "Reading contigs ..." << std::endl;
-	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE);
+	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE, false);
 	std::cout << "Done reading contigs."<< std::endl;
 
 	std::cout << "Reading reads ..." << std::endl;
-	std::map<std::string, std::string> reads = readFasta(READS_FILE);
+	std::map<std::string, std::string> reads = readFasta(READS_FILE, true);
 	std::cout << "Done reading reads."<< std::endl;
+
 
 	std::string nextContig = firstContig;
 	std::ofstream output;
@@ -217,7 +227,7 @@ int main() {
 				if(!inverted){
 					output << (contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart);
 				}else{
-					output<< invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart));
+					output << invertDNA((contigs.find(nextContig)->second).substr(lastExtensionStart,extension->lastStart));
 				}
 				isFirst = false;
 			}else{

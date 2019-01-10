@@ -4,6 +4,6 @@
 class Connection{
 public:
     std::string contigId;
-    std::string validPathNumber;
+    double validPathNumber;
     Path path; 
 };

@@ -64,7 +64,7 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 			//discard completely
 		}
 		else {
-			createMultipleGroups(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
+			createSingleGroup(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
 		}
 
  		std::cout << std::endl;
