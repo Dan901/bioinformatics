@@ -123,7 +123,7 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 
 		visitedNodes.insert(next->nextId);
 		path.add(next);
-		if (direction != next->sameStrand) {
+		if (!next->sameStrand) {
 			direction = !direction;
 		}
 	}
@@ -135,7 +135,7 @@ bool Graph::getNextDirection(Path & path) {
 	bool direction = true;
 
 	for (auto e : path.extensions) {
-		if (direction != e->sameStrand) {
+		if (!e->sameStrand) {
 			direction = !direction;
 		}
 	}

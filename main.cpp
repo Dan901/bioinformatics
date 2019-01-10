@@ -15,9 +15,15 @@ std::string READ_CONTIG_OVERLAPS_FILE = "data/CJejuni/overlaps_reads_contigs.paf
 std::string READ_OVERLAPS_FILE = "data/CJejuni/overlaps_reads.paf";
 std::string CONTIGS_FILE = "data/CJejuni/CJejuni - contigs.fasta";
 std::string READS_FILE = "data/CJejuni/CJejuni - reads.fastq";
-std::string OUTPUT_GENOME = "data/CJejuni/output.fasta";
+std::string OUTPUT_GENOME = "data/CJejuni/outputNew1_900000_1000_2000_0.1.fasta";
 std::string DNA_NAME = ">CJejuni\n";
-double CONFLICT_INDEX = 0.75; 
+
+// std::string READ_CONTIG_OVERLAPS_FILE = "data/EColi/overlaps_reads_contigs.paf";
+// std::string READ_OVERLAPS_FILE = "data/EColi/overlaps_reads.paf";
+// std::string CONTIGS_FILE = "data/EColi/ecoli_test_contigs.fasta";
+// std::string READS_FILE = "data/EColi/ecoli_test_reads.fasta";
+// std::string OUTPUT_GENOME = "data/EColi/output3.fasta";
+// std::string DNA_NAME = ">EColi\n";
 int OVERLAP_THRESHOLD = 1000;
 
 std::vector<std::string> split(std::string line, char delim) {
