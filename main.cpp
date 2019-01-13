@@ -122,7 +122,20 @@ std::string invertDNA(std::string toInvert) {
 	return inverted;
 }
 
-int main() {
+int main(int argc, char** argv) {
+	if(argc == 4) {
+		FOLDER		 = argv[1];
+		CONTIGS_FILE = FOLDER + argv[2];
+		READS_FILE   = FOLDER + argv[3];
+
+		READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
+		READ_OVERLAPS_FILE		  = FOLDER + "overlaps_reads.paf";
+		OUTPUT_GENOME		      = FOLDER + "output9.fasta";
+	}
+	else {
+		std::cout << "Additional arguments not detected, using default ones..." << std::endl;
+	}
+
 	BestExtensionSelector bestOS = BestExtensionSelector(compareByOverlapScore);
 	BestExtensionSelector bestES = BestExtensionSelector(compareByExtensionScore);
 
@@ -160,7 +173,7 @@ int main() {
 	std::map<std::string, Connection> pathConnection;
 
 	for (auto group : gen.consensusGroups) {
-		std::cout << "First group of contigs" << group.first.first << group.first.second << std::endl;
+		std::cout << "First group of contigs: " << group.first.first << " - " << group.first.second << std::endl;
 		Connection connection;
 		connection.contigId = group.first.second;
 		connection.validPathNumber = group.second.front().validPathNumber;
@@ -173,12 +186,12 @@ int main() {
 	for (auto connectionPair : connections) {
 		Connection best = connectionPair.second.front();
 		for (auto connection : connectionPair.second) {
-			std::cout << "Contig " << connectionPair.first << "and contig's " << connection.contigId << "is" << connection.validPathNumber << std::endl;
+			std::cout << "Contig " << connectionPair.first << " and contig's " << connection.contigId << " is " << connection.validPathNumber << std::endl;
 			if (best.validPathNumber < connection.validPathNumber) {
 				best = connection;
 			}
 		}
-		std::cout << "Contig pair" << connectionPair.first << "-" << best.contigId << std::endl;
+		std::cout << "Contig pair " << connectionPair.first << "-" << best.contigId << std::endl;
 		pathConnection[connectionPair.first] = best;
 	}
 

@@ -46,8 +46,6 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 		windows.push_back(std::move(window));
 	}
 
-	std::cout << windows.size() << std::endl;
-
 	for (auto path : paths) {
 		for (int i = 0; i < windows.size(); i++) {
 			if (path.length >= windows[i].baseLength && path.length < windows[i].baseLength + WINDOW_SIZE) {
