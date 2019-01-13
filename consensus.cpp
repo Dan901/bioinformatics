@@ -29,7 +29,90 @@ void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> p
 }
 
 void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info) {
+	auto minLengthPath = std::min_element(paths.begin(), paths.end(), [](const Path& p1, const Path&p2) {
+		return p1.length < p2.length;
+	});
 
+	long startingLength  = minLengthPath->length;
+	     startingLength /= 1000;
+		 startingLength  = floor(startingLength + 0.5) * 1000;
+
+	std::vector<ConsensusWindow> windows;
+	int numberOfWindows = WIDE_RANGE / WINDOW_SIZE;
+
+	for (int base = 0; base < numberOfWindows; base++) {
+		ConsensusWindow window;
+		window.baseLength = startingLength + base * WINDOW_SIZE;
+		windows.push_back(std::move(window));
+	}
+
+	std::cout << windows.size() << std::endl;
+
+	for (auto path : paths) {
+		for (int i = 0; i < windows.size(); i++) {
+			if (path.length >= windows[i].baseLength && path.length < windows[i].baseLength + WINDOW_SIZE) {
+				windows[i].paths.push_back(path);
+				break;
+			}
+		}
+	}
+
+	std::vector<ConsensusWindow> filteredWindows;
+	std::copy_if(windows.begin(), windows.end(), std::back_inserter(filteredWindows), [](const ConsensusWindow& w) {
+		return !w.paths.empty();
+	});
+
+	if (filteredWindows.size() < 3) {
+		createSingleGroup(pair, paths, info);
+	}
+	else {
+		double maxFreq = std::numeric_limits<double>().min();
+		for (auto& window : filteredWindows) {
+			for (auto path : window.paths) {
+				window.frequenciesSum += info[path.length].second;
+			}
+			if (window.frequenciesSum > maxFreq) {
+				maxFreq = window.frequenciesSum;
+			}
+		}
+
+		for (auto& window : filteredWindows) {
+			window.type = window.frequenciesSum < 0.2 * maxFreq ? VALLEY : PEAK;
+		}
+
+		std::vector<long> lengthSplits;
+		lengthSplits.push_back(startingLength);
+		lengthSplits.push_back(startingLength + WIDE_RANGE);
+
+		for (int index = 1; index < filteredWindows.size() - 1; index++) {
+			if (filteredWindows[index].type == VALLEY && filteredWindows[index - 1].type == PEAK && filteredWindows[index + 1].type == PEAK) {
+				auto minLengthFreqPath = std::min_element(filteredWindows[index].paths.begin(), filteredWindows[index].paths.end(), [info](const Path& p1, const Path&p2) {
+					return info.at(p1.length).second < info.at(p2.length).second;
+				});
+				lengthSplits.push_back(minLengthFreqPath->length);
+			}
+		}
+
+		if (lengthSplits.size() > 2) {
+			std::sort(lengthSplits.begin(), lengthSplits.end());
+
+			std::vector<std::vector<Path>> splitted(lengthSplits.size() - 1);
+			for (auto path : paths) {
+				for (int i = 1; i < lengthSplits.size(); i++) {
+					if (path.length >= lengthSplits[i - 1] && path.length < lengthSplits[i]) {
+						splitted[i - 1].push_back(path);
+						break;
+					}
+				}
+			}
+			for (auto paths : splitted) {
+				createSingleGroup(pair, paths, info);
+			}
+		}
+		else {
+			createSingleGroup(pair, paths, info);
+		}
+	}
 }
 
 void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, PathComparator>& paths) {
@@ -68,7 +151,7 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 			//discard completely
 		}
 		else {
-			createSingleGroup(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
+			createMultipleGroups(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
 		}
 
  		std::cout << std::endl;
