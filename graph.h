@@ -25,11 +25,9 @@ public:
 	std::vector<Path> constructPaths(std::string start);
 
 private:
-	const long MAX_PATH_LEN = 400000;
-	const int MAX_OVERHANG = 2000;
-	const int MIN_EXTENSION = 2000;
-	const double MAX_OVERHANG_EXTENSION_RATIO = 0.25;
-	const int RANDOM_PATH_TRIALS = 150;
+	const long MAX_PATH_LEN = 300000;
+	const double MAX_OVERHANG_EXTENSION_RATIO = 0.15;
+	const int RANDOM_PATH_TRIALS = 200;
 
 	std::default_random_engine randomEngine;
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;

@@ -22,7 +22,6 @@ std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
 std::string OUTPUT_GENOME = FOLDER + "output3";
 
-int crazy = 0;
 int OVERLAP_THRESHOLD = 1000;
 double SEQUENCE_IDENTITY_THRESHOLD = 0.3;
 
@@ -176,7 +175,7 @@ int main(int argc, char** argv) {
 
 		READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 		READ_OVERLAPS_FILE		  = FOLDER + "overlaps_reads.paf";
-		OUTPUT_GENOME		      = FOLDER + "output9.fasta";
+		OUTPUT_GENOME		      = FOLDER + "output1";
 	}
 	else {
 		std::cout << "Additional arguments not detected, using default ones..." << std::endl;
