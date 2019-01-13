@@ -47,6 +47,18 @@ Za izgradnju puteva koriste se tri pristupa. Prvi pristup iz početnog contiga i
 
 Na slici \ref{fig:graph} je primjer jednostavnog grafa preklapanja gdje brojevi na granama predstavljaju mjeru preklapanja $OS$. Pretpostavimo da tražimo put iz contig-a $C_1$ prvim pristupom. Prvo ćemo produžiti put u $R_1$, nakon toga u $R_2$ jer ima veću mjeru preklapanja od puta koji vodi u $R_3$. Međutim, kako dalje nema čvorova moramo se vratiti nazad i ići u $R_3$. Iako je po mjeri preklapanja veći put u $R_4$, za sljedeći čvor biramo $C_2$ jer predstavlja contig i time je jedan put završen.
 
-\section{Stevo}
+\section{Generiranje konsenzusa}
+Jednom kada je konstruiran graf preklapanja, od potencijalno velikog broja pronađenih puteva između svakog od parova contig-a potrebno je odabrati jednu  reprezentativnu (konsenzusnu) sekvencu \engl{consensus sequence}.
+
+Proces odabira takve sekvence započinje grupiranjem pronađenih puteva u tzv. konsenzusne grupe temeljem distribucije njihovih duljina, pri čemu razlikujemo 3 različita slučaja.
+
+\begin{enumerate}
+\item Prvi slučaj nastupa ukoliko su duljine svih pronađenih puteva usko distribuirane (unutar 10 kilobaza). Tada se svi putevi slažu u istu grupu, a kao reprezentativna sekvenca odabire se ona s najvećom prosječnom \textit{sequence identity} mjerom.
+
+\item Ukoliko su duljine distribuirane šire od 10 kb, no ne šire od 100 kb, pokušava se formirati više konsenzusnih grupa. Na početku se putevi razvrstavaju (temeljem njihove duljine) u 10 podgrupa veličine 10 kb, koje pokrivaju čitavo područje distribucije. Zatim se za svaku podgrupu koja sadrži barem jedan put izračuna suma globalnih frekvencija pojavljivanja sadržanih puteva određene duljine. Sve podgrupe čija je suma frekvencija manja od $20\%$ najveće sume označavaju se kao doline \engl{valleys} dok u suprotnom postaju vrhovi \engl{peaks}. Nad tako označenim podgrupama tada se traže sve doline okružene s vrhovima te ukoliko iste postoje, duljina puta s najmanjom globalnom frekvencijom pojavljivanja svake od njih postaje granična duljina cijepanja glavne grupe (u kojoj su prvotno sadržani svi putevi). Pronalazak $n$ takvih dolina dovodi do cijepanja glavne grupe na $n + 1$ dijelova, od kojih svaki postaje zasebna konsenzusna grupa čija se reprezentativna sekvenca bira identično kao i u prvom slučaju.
+
+\item Ukoliko su duljine distribuirane šire od 100 kb, u potpunosti se odbacuje mogućnost odabira reprezentativne sekvence između tog para contig-a.
+\end{enumerate}
+Nakon stvaranja svake od grupa, iz istih se filtriraju putevi čija je frekvencija pojavljivanja duljine manja od $50\%$ najveće frekvencije. Jednom kada su stvorene grupe između svih parova contig-a prelazi se na zadnji korak algoritma.
 
 \section{Mihaela}
