@@ -4,6 +4,6 @@
 class Trail{
 public:
     std::vector<std::pair<std::string, std::string>> trail;
-    double goodnes; 
+    double goodness; 
     std::string getName();
 };

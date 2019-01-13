@@ -13,14 +13,14 @@
 #include "node.h"
 #include "trail.h"
 
-std::string DNA_NAME = ">CJejuni";
-std::string FOLDER = "data/CJejuni/";
-std::string CONTIGS_FILE = FOLDER + "CJejuni - contigs.fasta";
-std::string READS_FILE = FOLDER + "CJejuni - reads.fastq";
+std::string DNA_NAME = ">EColi ";
+std::string FOLDER = "data/EColi/";
+std::string CONTIGS_FILE = FOLDER + "ecoli_test_contigs.fasta";
+std::string READS_FILE = FOLDER + "ecoli_test_reads.fasta";
 
 std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
-std::string OUTPUT_GENOME = FOLDER + "output";
+std::string OUTPUT_GENOME = FOLDER + "output1";
 
 int crazy = 0;
 int OVERLAP_THRESHOLD = 1000;
@@ -135,25 +135,25 @@ std::vector<Trail> findTrails(std::string currentContig, std::map<std::string, N
 			continue;
 		}
 		// std::cout<< "Still Next contig " << nextContig << std::endl;
-		currentTrail.goodnes += nextElement.second;
+		currentTrail.goodness += nextElement.second;
 		currentTrail.trail.push_back(std::make_pair(currentContig, nextContig));
 		nodes[nextContig]->visited = true;
 		currentTrails = findTrails(nextContig, nodes, currentTrails, currentTrail);
 		nodes[nextContig]->visited = false;
-		currentTrail.goodnes -= nextElement.second;
+		currentTrail.goodness -= nextElement.second;
 		currentTrail.trail.pop_back();
 	}
 	currentTrails.push_back(currentTrail);
 	return currentTrails;
 }
 
-bool trailSorterByGoodnes(Trail train1, Trail trail2){
-	return (train1.goodnes < trail2.goodnes);
+bool trailSorterByGoodness(Trail train1, Trail trail2){
+	return (train1.goodness < trail2.goodness);
 }
 
-bool trailSorterByLengthAndGoodnes(Trail train1, Trail trail2){
+bool trailSorterByLengthAndGoodness(Trail train1, Trail trail2){
 	if(train1.trail.size() == trail2.trail.size()){
-		return train1.goodnes < trail2.goodnes;
+		return train1.goodness < trail2.goodness;
 	}
 	return (train1.trail.size() < trail2.trail.size());
 }
@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
 	}
 
 	for(auto trail : trails){
-		std::cout << "Benefit : " << trail.goodnes << std::endl;
+		std::cout << "Benefit : " << trail.goodness << std::endl;
 		for(auto element : trail.trail){
 			std::cout << element.first << "->" << element.second << std::endl;
 		}
@@ -271,14 +271,14 @@ int main(int argc, char** argv) {
 	// }
 
 	// SORT BY LENGTH and then goodnes
-	std::sort(trails.begin(), trails.end(), trailSorterByLengthAndGoodnes);
+	std::sort(trails.begin(), trails.end(), trailSorterByLengthAndGoodness);
 	
 	std::cout << "Best by length" << std::endl;
 	std::vector<Trail> bestTrailsByLength;
-	for(int i = 0; i < 3; i ++){
-		Trail curr = trails.at(trails.size() - i - 1);
+	for(int i = trails.size()-1; i  >= trails.size() - 3 && i >= 0; i --){
+		Trail curr = trails.at(i);
 		bestTrailsByLength.push_back(curr);
-		std::cout << "Benefit : " << curr.goodnes << std::endl;
+		std::cout << "Benefit : " << curr.goodness << std::endl;
 		for(auto element : curr.trail){
 			std::cout << element.first << "->" << element.second << std::endl;
 		}
@@ -289,7 +289,7 @@ int main(int argc, char** argv) {
 	std::cout << "Done reading contigs." << std::endl;
 
 	std::cout << "Reading reads ..." << std::endl;
-	std::map<std::string, std::string> reads = readFasta(READS_FILE, true);
+	std::map<std::string, std::string> reads = readFasta(READS_FILE, false);
 	std::cout << "Done reading reads." << std::endl;
 
 	for(auto trail : bestTrailsByLength){
@@ -343,6 +343,7 @@ int main(int argc, char** argv) {
 		} else {
 			output << invertDNA((contigs.find(lastContig)->second).substr(lastExtensionStart, lastExtensionLength));
 		}
+		output.flush();
 		output.close();
 	}
 

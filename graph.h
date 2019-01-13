@@ -26,10 +26,10 @@ public:
 
 private:
 	const long MAX_PATH_LEN = 700000;
-	const int MAX_OVERHANG = 1000;
-	const int MIN_EXTENSION = 1000;
-	const double MAX_OVERHANG_EXTENSION_RATIO = 0.1;
-	const int RANDOM_PATH_TRIALS = 200;
+	const int MAX_OVERHANG = 2000;
+	const int MIN_EXTENSION = 2000;
+	const double MAX_OVERHANG_EXTENSION_RATIO = 0.05;
+	const int RANDOM_PATH_TRIALS = 0;
 
 	std::default_random_engine randomEngine;
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;

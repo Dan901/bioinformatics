@@ -3,7 +3,7 @@
 std::string Trail::getName(){
     std::string name = trail.front().first;
     for(auto element : trail){
-        name +="->"+element.second;
+        name +="-"+element.second;
     }
     return name;
 }
