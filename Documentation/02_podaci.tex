@@ -1,2 +1,11 @@
-\chapter{Podaci i problemi}
-Blah Blah
+\chapter{Opis problema i podataka}
+Cilj ovog projekta je poboljšati djelomično sastavljen genom koristeći duga očitanja. Ukoliko genom ima puno ponavljajućih sekvenci, pogotovo ako su iste duže od duljine očitanja, teško ga je sastaviti u potpunosti. Ulazni podaci su skup sastavljenih sekvenci (contig-a), koje su dobivene nekim od alata za sastavljanje genoma, te skup dugih očitanja. Zadatak je napisati program koji pokušava sastaviti contig-e u jednu sekvencu koristeći dobivena očitanja.
+
+Za provjeru rada implementacije korištena su 3 genoma:
+\begin{enumerate}
+\item EColi - sintetski podaci
+\item CJejuni - stvarni podaci
+\item BGrahamii - stvarni podaci
+\end{enumerate}
+
+Svi podaci se sastoje od datoteke s očitanjima te datoteke s već sastavljenim sekvencama koje su u FASTA formatu. Uz njih algoritmu su potrebna i preklapanja između contig-a i očitanja, te međusobna preklapanja očitanja koja su dobivena alatom Minimap2 \footnote{https://github.com/lh3/minimap2} u PAF formatu. Konačno, dobivena je i datoteka koja sadrži referentnu sekvencu s kojom se uspoređuje krajnji rezultat.
