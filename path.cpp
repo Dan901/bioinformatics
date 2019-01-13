@@ -1,4 +1,5 @@
 #include "path.h"
+#include <cmath>
 
 void Path::add(Extension * extension) {
 	length -= extension->overhangLen;
@@ -17,11 +18,22 @@ void Path::removeLast() {
 
 void Path::finishPath() {
 	reads.push_back(start);
+	std::vector<double> sequenceIds;
 	for (auto e : extensions) {
+		sequenceIds.push_back(e->sequenceId);
 		average_seq_id += e->sequenceId;
 		reads.push_back(e->nextId);
 	}
 	average_seq_id /= extensions.size();
+	std::sort(sequenceIds.begin(), sequenceIds.end());
+
+	if ((sequenceIds.size() + 1) % 2 == 0) {
+		median_seq_id = sequenceIds[(sequenceIds.size() + 1) / 2 - 1];
+	}
+	else {
+		double index = floor((sequenceIds.size() + 1) / 2) - 1;
+		median_seq_id = (sequenceIds[index] + sequenceIds[index + 1]) / 2;
+	}
 
 	length += extensions.front()->lastLen;
 }

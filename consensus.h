@@ -8,6 +8,7 @@ struct ConsensusGroup {
 	std::vector<Path> paths;
 
 	double  validPathNumber;
+	double  validPathMedian;
 	Path consensusSequence;
 };
 

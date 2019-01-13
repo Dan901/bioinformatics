@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <unordered_set>
 #include "extension.h"
 
@@ -11,6 +12,7 @@ struct Path {
 	std::vector<Extension*> extensions;
 	std::vector<std::string> reads;
 	double average_seq_id = 0;
+	double median_seq_id = 0;
 
 	Path() {}
 	Path(std::string start) : start(start) {}
