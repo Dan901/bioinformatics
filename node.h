@@ -7,4 +7,5 @@ public:
     std::string contigId;
     // contigs and its value
     std::map<std::string, double> vertices; 
+    bool visited;
 };

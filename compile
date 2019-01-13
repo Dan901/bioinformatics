@@ -1,0 +1,9 @@
+#!/bin/bash
+g++-8 -std=c++17 -c graph.cpp
+g++-8 -std=c++17 -c paf.cpp
+g++-8 -std=c++17 -c trail.cpp
+g++-8 -std=c++17 -c path.cpp
+g++-8 -std=c++17 -c consensus.cpp
+g++-8 -std=c++17 -c extension.cpp
+g++-8 -std=c++17 -c main.cpp
+g++-8 -std=c++17 -o main main.o consensus.o extension.o graph.o paf.o path.o trail.o
