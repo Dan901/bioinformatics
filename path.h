@@ -11,8 +11,8 @@ struct Path {
 	long length = 0;
 	std::vector<Extension*> extensions;
 	std::vector<std::string> reads;
-	double average_seq_id = 0;
-	double median_seq_id = 0;
+	double averageSeqId = 0;
+	double medianSeqId = 0;
 
 	Path() {}
 	Path(std::string start) : start(start) {}

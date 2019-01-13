@@ -11,12 +11,12 @@ void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> p
 	consensus.nodePair = pair;
 
 	auto consensusSequence = std::max_element(paths.begin(), paths.end(), [](const Path& p1, const Path&p2) {
-		return p1.average_seq_id < p2.average_seq_id;
+		return p1.averageSeqId < p2.averageSeqId;
 	});
 
 	consensus.consensusSequence = *consensusSequence;
-	consensus.validPathNumber   =  consensusSequence->average_seq_id;
-	consensus.validPathMedian   =  consensusSequence->median_seq_id;
+	consensus.validPathNumber   =  consensusSequence->averageSeqId;
+	consensus.validPathMedian   =  consensusSequence->medianSeqId;
 
 	auto highest_frequency = std::max_element(info.begin(), info.end(), [](const std::pair<long, std::pair<int, double>>& p1, const std::pair<long, std::pair<int, double>>& p2) {
 		return p1.second.second < p2.second.second; 

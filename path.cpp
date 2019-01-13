@@ -21,18 +21,18 @@ void Path::finishPath() {
 	std::vector<double> sequenceIds;
 	for (auto e : extensions) {
 		sequenceIds.push_back(e->sequenceId);
-		average_seq_id += e->sequenceId;
+		averageSeqId += e->sequenceId;
 		reads.push_back(e->nextId);
 	}
-	average_seq_id /= extensions.size();
+	averageSeqId /= extensions.size();
 	std::sort(sequenceIds.begin(), sequenceIds.end());
 
 	if ((sequenceIds.size() + 1) % 2 == 0) {
-		median_seq_id = sequenceIds[(sequenceIds.size() + 1) / 2 - 1];
+		medianSeqId = sequenceIds[(sequenceIds.size() + 1) / 2 - 1];
 	}
 	else {
 		double index = floor((sequenceIds.size() + 1) / 2) - 1;
-		median_seq_id = (sequenceIds[index] + sequenceIds[index + 1]) / 2;
+		medianSeqId = (sequenceIds[index] + sequenceIds[index + 1]) / 2;
 	}
 
 	length += extensions.front()->lastLen;
