@@ -3,7 +3,6 @@
 
 class Connection{
 public:
-    bool inverted;
     double validPathNumber;
     Path path; 
 };

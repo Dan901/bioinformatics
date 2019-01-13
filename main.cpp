@@ -13,14 +13,14 @@
 #include "node.h"
 #include "trail.h"
 
-std::string DNA_NAME = ">CJejuni\n";
+std::string DNA_NAME = ">CJejuni";
 std::string FOLDER = "data/CJejuni/";
 std::string CONTIGS_FILE = FOLDER + "CJejuni - contigs.fasta";
 std::string READS_FILE = FOLDER + "CJejuni - reads.fastq";
 
 std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
-std::string OUTPUT_GENOME = FOLDER + "output10.fasta";
+std::string OUTPUT_GENOME = FOLDER + "output";
 
 int crazy = 0;
 int OVERLAP_THRESHOLD = 1000;
@@ -126,34 +126,36 @@ std::string invertDNA(std::string toInvert) {
 }
 
 std::vector<Trail> findTrails(std::string currentContig, std::map<std::string, Node*>& nodes, std::vector<Trail>& currentTrails, Trail currentTrail){
-	std::cout << "Visited node "<< currentContig << " atfer findTrails called should be true" << nodes[currentContig]->visited  << std::endl;
-	crazy ++;
-	if(crazy > 50){
-		return currentTrails;
-	}
-	std::cout << "Number of vertices for this node "<< nodes[currentContig]->vertices.size() << std::endl;
+	// std::cout << "Visited node "<< currentContig << " atfer findTrails called should be true" << nodes[currentContig]->visited  << std::endl;
+	// std::cout << "Number of vertices for this node "<< nodes[currentContig]->vertices.size() << std::endl;
 	for(auto nextElement : nodes[currentContig]->vertices){
-		crazy ++;
-		if(crazy > 50){
-			return currentTrails;
-		}
 		std::string nextContig = nextElement.first;
-		std::cout<< "Next contig " << nextContig << std::endl;
+		// std::cout<< "Next contig " << nextContig << std::endl;
 		if(nodes[nextContig]->visited){
 			continue;
 		}
-		std::cout<< "Still Next contig " << nextContig << std::endl;
+		// std::cout<< "Still Next contig " << nextContig << std::endl;
 		currentTrail.goodnes += nextElement.second;
 		currentTrail.trail.push_back(std::make_pair(currentContig, nextContig));
-		nodes[nextContig]->visited == true;
+		nodes[nextContig]->visited = true;
 		currentTrails = findTrails(nextContig, nodes, currentTrails, currentTrail);
-		nodes[nextContig]->visited == false;
+		nodes[nextContig]->visited = false;
 		currentTrail.goodnes -= nextElement.second;
 		currentTrail.trail.pop_back();
 	}
 	currentTrails.push_back(currentTrail);
 	return currentTrails;
-	//TODO close trail
+}
+
+bool trailSorterByGoodnes(Trail train1, Trail trail2){
+	return (train1.goodnes < trail2.goodnes);
+}
+
+bool trailSorterByLengthAndGoodnes(Trail train1, Trail trail2){
+	if(train1.trail.size() == trail2.trail.size()){
+		return train1.goodnes < trail2.goodnes;
+	}
+	return (train1.trail.size() < trail2.trail.size());
 }
 
 int main() {
@@ -189,7 +191,7 @@ int main() {
 	gen.generateConsensus(uniquePaths);
 
 	//as there can be more conections stemming from the same contig
-	std::map<std::pair<std::string, std::string>, std::vector<Connection>> contigConnections;
+	std::map<std::pair<std::string, std::string>, Connection> contigConnections;
 	//Resolved contig and its connection to the nest contig
 	// std::map<std::string, Connection> pathConnection;
 	std::map<std::string, Node*> nodes;
@@ -202,11 +204,14 @@ int main() {
 
 	for (auto group : gen.consensusGroups) {
 		std::cout << "First group of contigs" << group.first.first << group.first.second << std::endl;
+		if(contigConnections.find(group.first) != contigConnections.end() && group.second.front().validPathNumber < contigConnections[group.first].validPathNumber){
+			continue;
+		}
+
 		Connection connection;
 		connection.validPathNumber = group.second.front().validPathNumber;
 		connection.path = group.second.front().consensusSequence;
-		connection.inverted = false;
-		contigConnections[group.first].push_back(connection);
+		contigConnections[group.first] = connection;
 
 
 		//Adding to cotg first vertex to second ctg 
@@ -215,27 +220,25 @@ int main() {
 			nodes[group.first.first]->vertices[group.first.second] = group.second.front().validPathNumber; 
 		}
 		//Adding to ctg second verted to first ctg 
-		contigConnectionValue =  nodes[group.first.second]->vertices[group.first.first];
-		if(contigConnectionValue < group.second.front().validPathNumber){
-			nodes[group.first.second]->vertices[group.first.first] = group.second.front().validPathNumber; 
-		}
+		// contigConnectionValue =  nodes[group.first.second]->vertices[group.first.first];
+		// nodes[group.first.second]->vertices[group.first.first] = group.second.front().validPathNumber; 
 
-		// save the connection between two conntigs as a revers too
-		Connection connection1;
-		connection1.validPathNumber = group.second.front().validPathNumber;
-		connection1.path = group.second.front().consensusSequence;
-		connection1.inverted = true;
-		contigConnections[std::make_pair(group.first.second, group.first.first)].push_back(connection1);
+		// // save the connection between two conntigs as a revers too
+		// Connection connection1;
+		// connection1.validPathNumber = group.second.front().validPathNumber;
+		// connection1.path = group.second.front().consensusSequence;
+		// connection1.inverted = true;
+		// contigConnections[std::make_pair(group.first.second, group.first.first)] = connection1;
 	}
 
 	// you have to sort this!!!!
 	std::vector<Trail> trails;
 	for(auto elements: nodes){
 		std::string currentContigsId = elements.first;
-		nodes[currentContigsId]->visited == true;	
+		nodes[currentContigsId]->visited = true;	
 		std::cout<< currentContigsId << std::endl;
 		trails = findTrails(currentContigsId, nodes, trails, Trail());
-		nodes[currentContigsId]->visited == false;	
+		nodes[currentContigsId]->visited = false;	
 
 		// std::cout << "For node " << elements.first << std::endl;
 		// for(auto vertex : elements.second.vertices){
@@ -248,6 +251,97 @@ int main() {
 		for(auto element : trail.trail){
 			std::cout << element.first << "->" << element.second << std::endl;
 		}
+	}
+
+	std::cout << "Number of trails found :"<< trails.size()-1 << std::endl;
+
+// SORT BY GOODNES 
+	// std::sort(trails.begin(), trails.end(), trailSorterByGoodnes);
+	// std::cout << "Best by goodnes" << std::endl;
+	// std::vector<Trail> bestTrailsByGoodnes;
+	// for(int i = 0; i < 3; i ++){
+	// 	Trail curr = trails.at(trails.size() - i - 1);
+	// 	bestTrailsByGoodnes.push_back(curr);
+	// 	std::cout << "Benefit : " << curr.goodnes << std::endl;
+	// 	for(auto element : curr.trail){
+	// 		std::cout << element.first << "->" << element.second << std::endl;
+	// 	}
+	// }
+
+// SORT BY LENGTH and then goodnes
+	std::sort(trails.begin(), trails.end(), trailSorterByLengthAndGoodnes);
+	
+	std::cout << "Best by length" << std::endl;
+	std::vector<Trail> bestTrailsByLength;
+	for(int i = 0; i < 3; i ++){
+		Trail curr = trails.at(trails.size() - i - 1);
+		bestTrailsByLength.push_back(curr);
+		std::cout << "Benefit : " << curr.goodnes << std::endl;
+		for(auto element : curr.trail){
+			std::cout << element.first << "->" << element.second << std::endl;
+		}
+	}
+
+	std::cout << "Reading contigs ..." << std::endl;
+	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE, false);
+	std::cout << "Done reading contigs." << std::endl;
+
+	std::cout << "Reading reads ..." << std::endl;
+	std::map<std::string, std::string> reads = readFasta(READS_FILE, true);
+	std::cout << "Done reading reads." << std::endl;
+
+	for(auto trail : bestTrailsByLength){
+		std::cout << "Currently resolving path: "<< trail.getName() << std::endl;
+		std::ofstream output;
+		output.open(OUTPUT_GENOME +"_"+ trail.getName() + ".fasta");
+		output << DNA_NAME + " " + trail.getName() + "\n";
+		bool isFirst = true;
+		int lastExtensionStart = 0;
+		int lastExtensionEnd = -1;
+		int lastExtensionLength = -1;
+		int sameStrand = true;
+		int inverted = false;
+		std::string lastReadId;
+		std::string lastContig;
+
+		for(auto contigPair : trail.trail){
+			Connection connection = contigConnections[contigPair];
+			std::cout << "Currently resolving contig connection: " << contigPair.first << "-" << contigPair.second << std::endl;
+			for (auto extension : connection.path.extensions) {
+				if (isFirst) {
+					if (!inverted) {
+						output << (contigs.find(contigPair.first)->second).substr(lastExtensionStart, extension->lastStart);
+					} else {
+						output << invertDNA((contigs.find(contigPair.first)->second).substr(lastExtensionStart, extension->lastStart));
+					}
+					isFirst = false;
+				} else {
+					if (!inverted) {
+						output << (reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart);
+					} else {
+						output << invertDNA((reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart));
+					}
+				}
+				lastExtensionStart = extension->nextStart;
+				lastExtensionEnd = extension->nextEnd;
+				lastReadId = extension->nextId;
+				lastExtensionLength = extension->nextLen;
+				sameStrand = extension->sameStrand;
+				if (!sameStrand) {
+					inverted = !inverted;
+				}
+			}
+			isFirst = true;
+			output.flush();
+			lastContig = contigPair.second;
+		}
+	
+		if (!inverted) {
+			output << (contigs.find(lastContig)->second).substr(lastExtensionStart, lastExtensionLength);
+		} else {
+			output << invertDNA((contigs.find(lastContig)->second).substr(lastExtensionStart, lastExtensionLength));
+		}
+		output.close();
 	}
 
 

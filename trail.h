@@ -5,4 +5,5 @@ class Trail{
 public:
     std::vector<std::pair<std::string, std::string>> trail;
     double goodnes; 
+    std::string getName();
 };
