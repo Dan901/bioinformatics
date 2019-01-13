@@ -3,9 +3,9 @@ Cilj ovog projekta je poboljšati djelomično sastavljen genom koristeći duga o
 
 Za provjeru rada implementacije korištena su 3 genoma:
 \begin{enumerate}
-\item EColi - sintetski podaci
-\item CJejuni - stvarni podaci
-\item BGrahamii - stvarni podaci
+\item EColi - sintetski podaci (3 contig-a)
+\item CJejuni - stvarni podaci (5 contig-a)
+\item BGrahamii - stvarni podaci (5 contiga-a)
 \end{enumerate}
 
 Svi podaci se sastoje od datoteke s očitanjima te datoteke s već sastavljenim sekvencama koje su u FASTA formatu. Uz njih algoritmu su potrebna i preklapanja između contig-a i očitanja, te međusobna preklapanja očitanja koja su dobivena alatom Minimap2 \footnote{https://github.com/lh3/minimap2} u PAF formatu. Konačno, dobivena je i datoteka koja sadrži referentnu sekvencu s kojom se uspoređuje krajnji rezultat.
