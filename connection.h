@@ -3,7 +3,7 @@
 
 class Connection{
 public:
-    std::string contigId;
+    bool inverted;
     double validPathNumber;
     Path path; 
 };
