@@ -13,14 +13,14 @@
 #include "node.h"
 #include "trail.h"
 
-std::string DNA_NAME = ">EColi ";
-std::string FOLDER = "data/EColi/";
-std::string CONTIGS_FILE = FOLDER + "ecoli_test_contigs.fasta";
-std::string READS_FILE = FOLDER + "ecoli_test_reads.fasta";
+std::string DNA_NAME = ">CJejuni ";
+std::string FOLDER = "data/CJejuni/";
+std::string CONTIGS_FILE = FOLDER + "CJejuni - contigs.fasta";
+std::string READS_FILE = FOLDER + "CJejuni - reads.fastq";
 
 std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
-std::string OUTPUT_GENOME = FOLDER + "output1";
+std::string OUTPUT_GENOME = FOLDER + "output3";
 
 int crazy = 0;
 int OVERLAP_THRESHOLD = 1000;
@@ -78,12 +78,23 @@ Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 
 	return graph;
 }
+bool hasEnding (std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
 
 //contig
-std::map<std::string, std::string> readFasta(std::string file, bool realFasta) {
+std::map<std::string, std::string> readFasta(std::string file) {
 	std::ifstream input(file);
 	std::string line;
 	std::map<std::string, std::string> output;
+	bool isFastQ = false;
+	if(hasEnding(file, "fastq")){
+		isFastQ = true;
+	}
 
 	bool data = false;
 	std::string name;
@@ -97,11 +108,11 @@ std::map<std::string, std::string> readFasta(std::string file, bool realFasta) {
 		if (data) {
 			bases = line;
 			output[name] = bases;
-			if (realFasta) {
+			if (isFastQ) {
 				skip = 2;
 			}
 		} else {
-			name = line.substr(1, line.size());
+			name = split(line.substr(1, line.size()), ' ').at(0);
 		}
 		data = !data;
 	}
@@ -216,20 +227,21 @@ int main(int argc, char** argv) {
 
 	for (auto group : gen.consensusGroups) {
 		std::cout << "First group of contigs" << group.first.first << group.first.second << std::endl;
-		if(contigConnections.find(group.first) != contigConnections.end() && group.second.front().validPathNumber < contigConnections[group.first].validPathNumber){
-			continue;
-		}
+		for(auto pairGroup : group.second){
+			if(contigConnections.find(group.first) != contigConnections.end() && pairGroup.validPathNumber < contigConnections[group.first].validPathNumber){
+				continue;
+			}
 
-		Connection connection;
-		connection.validPathNumber = group.second.front().validPathNumber;
-		connection.path = group.second.front().consensusSequence;
-		contigConnections[group.first] = connection;
+			Connection connection;
+			connection.validPathNumber = pairGroup.validPathNumber;
+			connection.path = pairGroup.consensusSequence;
+			contigConnections[group.first] = connection;
 
-
-		//Adding to cotg first vertex to second ctg 
-		double contigConnectionValue = nodes[group.first.first]->vertices[group.first.second];
-		if(contigConnectionValue < group.second.front().validPathNumber){
-			nodes[group.first.first]->vertices[group.first.second] = group.second.front().validPathNumber; 
+			//Adding to cotg first vertex to second ctg 
+			double contigConnectionValue = nodes[group.first.first]->vertices[group.first.second];
+			if(contigConnectionValue < pairGroup.validPathNumber){
+				nodes[group.first.first]->vertices[group.first.second] = pairGroup.validPathNumber; 
+			}
 		}
 	}
 
@@ -285,11 +297,11 @@ int main(int argc, char** argv) {
 	}
 
 	std::cout << "Reading contigs ..." << std::endl;
-	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE, false);
+	std::map<std::string, std::string> contigs = readFasta(CONTIGS_FILE);
 	std::cout << "Done reading contigs." << std::endl;
 
 	std::cout << "Reading reads ..." << std::endl;
-	std::map<std::string, std::string> reads = readFasta(READS_FILE, false);
+	std::map<std::string, std::string> reads = readFasta(READS_FILE);
 	std::cout << "Done reading reads." << std::endl;
 
 	for(auto trail : bestTrailsByLength){
