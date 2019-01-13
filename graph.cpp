@@ -74,7 +74,21 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 	for (auto extensionSelector : extensionSelectors) {
 		for (std::vector<Extension>::iterator first = suffixes[start].begin(); first != suffixes[start].end(); ++first) {
 			try {
-				Path path = dfs(start, &(*first), extensionSelector);
+				Path path(start, true);
+				dfs(path, &(*first), extensionSelector);
+				if (path.extensions.empty()) continue;
+
+				path.finishPath();
+				paths.push_back(std::move(path));
+			} catch (PathTooLongException& e) {
+				continue;
+			}
+		}
+
+		for (std::vector<Extension>::iterator first = prefixes[start].begin(); first != prefixes[start].end(); ++first) {
+			try {
+				Path path(start, false);
+				dfs(path, &(*first), extensionSelector);
 				if (path.extensions.empty()) continue;
 
 				path.finishPath();
@@ -101,24 +115,22 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 }
 
 // construct path using DFS starting with given overlap
-Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extensionSelector) {
-	bool direction = first->sameStrand;
-
-	Path path(start);
+void Graph::dfs(Path & path, Extension * first, ExtensionSelector * extensionSelector) {
 	path.add(first);
+	bool direction = getNextDirection(path);
 
 	std::unordered_set<std::string> visitedNodes;
-	visitedNodes.insert(start);
+	visitedNodes.insert(path.start);
 	visitedNodes.insert(first->nextId);
 
 	while (!path.extensions.empty()) {
 		std::string current = path.extensions.back()->nextId;
 		std::vector<Extension>& candidates = direction ? suffixes[current] : prefixes[current];
 
-		Extension* next = findExtensionToContig(candidates, start);
+		Extension* next = findExtensionToContig(candidates, path.start);
 		if (next) {
 			path.add(next);
-			return path;
+			return;
 		}
 
 		if (path.length > MAX_PATH_LEN) {
@@ -141,13 +153,13 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 		path.removeLast();
 		direction = getNextDirection(path);
 	}
-
-	return path;
 }
 
 Path Graph::randomPath(std::string start) {
-	Path path(start);
-	bool direction = true;
+	std::uniform_int_distribution<> unif(0, 1);
+	bool direction = unif(randomEngine);
+
+	Path path(start, direction);
 	std::string current = start;
 
 	std::unordered_set<std::string> visitedNodes;
@@ -205,7 +217,7 @@ Extension * Graph::getRandomExtension(std::vector<Extension>& extensions, std::u
 }
 
 bool Graph::getNextDirection(Path & path) {
-	bool direction = true;
+	bool direction = path.extendingTail;
 
 	for (auto e : path.extensions) {
 		if (!e->sameStrand) {

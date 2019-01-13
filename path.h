@@ -8,6 +8,7 @@
 
 struct Path {
 	std::string start;
+	bool extendingTail;
 	long length = 0;
 	std::vector<Extension*> extensions;
 	std::vector<std::string> reads;
@@ -15,7 +16,7 @@ struct Path {
 	double medianSeqId = 0;
 
 	Path() {}
-	Path(std::string start) : start(start) {}
+	Path(std::string start, bool extendingTail) : start(start), extendingTail(extendingTail) {}
 
 	void add(Extension* extension);
 	void removeLast();

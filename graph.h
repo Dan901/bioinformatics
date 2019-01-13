@@ -27,13 +27,13 @@ public:
 private:
 	const long MAX_PATH_LEN = 300000;
 	const double MAX_OVERHANG_EXTENSION_RATIO = 0.05;
-	const int RANDOM_PATH_TRIALS = 200;
+	const int RANDOM_PATH_TRIALS = 0;
 
 	std::default_random_engine randomEngine;
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;
 	std::unordered_map<std::string, std::vector<Extension>> suffixes;
 
-	Path dfs(std::string start, Extension* first, ExtensionSelector* extensionSelector);
+	void dfs(Path& path, Extension* first, ExtensionSelector* extensionSelector);
 	Path randomPath(std::string start);
 	Extension* getRandomExtension(std::vector<Extension>& extensions, std::unordered_set<std::string>& visitedNodes);
 	bool getNextDirection(Path& path);
