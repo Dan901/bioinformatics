@@ -10,7 +10,7 @@ See the list of [contributors](https://github.com/Dan901/bioinformatics/graphs/c
 ## Usage - for linux users
 First one should clone the project with git. 
 
-Second, start the 'compile' script. If the script is not executable type in the bash: 
+Second, start the 'compile' script. If the script is not executable, type: 
 ```bash
 chmod +x compile
 ```
