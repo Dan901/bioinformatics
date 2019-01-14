@@ -35,7 +35,7 @@ Start the script by writing:
  4.	Relative or absolute path to the files with overlaps from reads with reads in paf format = data/EColi/overlaps_reads.paf
  5. Relative or absolute path to the output file = data/Ecoli/prefix
   * after the prefix of the output path contig sequence will follow
- 6.	overlapThreshold, overlaps containing less bases then this will be discarded
+ 6.	overlapThreshold, overlaps containing less nucleobases then this will be discarded, minimal value of 500
  7.	siThreshold, double that represents the lowest sequence identity that will not be discarded, only overlabs with a bigger Si will be used  
  8.	maxPathLength, maximum number of bases a connectiong between two contigs can contain
  9. maxOverhangExtensionRatio, double that represents how big can the overhang be in relation to an extension 
