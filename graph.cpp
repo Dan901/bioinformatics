@@ -2,6 +2,7 @@
 #include <iostream>
 #include "graph.h"
 
+// inserts nodes and edges to the graph
 void Graph::insertExtensions(PafLine & line) {
 	Extension e1, e2;
 
@@ -46,7 +47,7 @@ void Graph::insertExtensions(PafLine & line) {
 	}
 
 	int overhangSum = e1.overhangLen + e2.overhangLen;
-	if (e1.overhangLen  > MAX_OVERHANG_EXTENSION_RATIO * e1.extensionLen ||  e2.overhangLen > MAX_OVERHANG_EXTENSION_RATIO * e2.extensionLen) return;
+	if (e1.overhangLen  > maxOverhangExtensionRatio * e1.extensionLen ||  e2.overhangLen > maxOverhangExtensionRatio * e2.extensionLen) return;
 
 	if (line.sameStrand) {
 		if (line.extensionScore1 > line.extensionScore2) {
@@ -85,7 +86,7 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 		}
 	}
 
-	for (int i = 0; i < RANDOM_PATH_TRIALS; i++) {
+	for (int i = 0; i < randomPathTrials; i++) {
 		try {
 			Path path = randomPath(start);
 			if (path.extensions.empty() || contigIds.find(path.extensions.back()->nextId) == contigIds.end()) continue;
@@ -100,7 +101,7 @@ std::vector<Path> Graph::constructPaths(std::string start) {
 	return paths;
 }
 
-// construct path using DFS starting with given overlap
+// construct path using DFS starting with given first extension
 Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extensionSelector) {
 	bool direction = first->sameStrand;
 
@@ -121,7 +122,7 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 			return path;
 		}
 
-		if (path.length > MAX_PATH_LEN) {
+		if (path.length > maxPathLength) {
 			throw PathTooLongException();
 		}
 
@@ -145,6 +146,7 @@ Path Graph::dfs(std::string start, Extension * first, ExtensionSelector * extens
 	return path;
 }
 
+// try to construct a random path from given starting node
 Path Graph::randomPath(std::string start) {
 	Path path(start);
 	bool direction = true;
@@ -162,7 +164,7 @@ Path Graph::randomPath(std::string start) {
 			return path;
 		}
 
-		if (path.length > MAX_PATH_LEN) {
+		if (path.length > maxPathLength) {
 			throw PathTooLongException();
 		}
 
@@ -179,6 +181,7 @@ Path Graph::randomPath(std::string start) {
 	}
 }
 
+// get random extension with probabilty proportional to its extension score
 Extension * Graph::getRandomExtension(std::vector<Extension>& extensions, std::unordered_set<std::string>& visitedNodes) {
 	std::vector<Extension*> candidates;
 	for (auto & e : extensions) {
@@ -204,6 +207,7 @@ Extension * Graph::getRandomExtension(std::vector<Extension>& extensions, std::u
 	return candidates.back();
 }
 
+// calculate next extension direction
 bool Graph::getNextDirection(Path & path) {
 	bool direction = true;
 

@@ -13,7 +13,7 @@
 #include "node.h"
 #include "trail.h"
 
-std::string DNA_NAME = ">EColi ";
+std::string DNA_NAME = ">";
 std::string FOLDER = "data/EColi/";
 std::string CONTIGS_FILE = FOLDER + "ecoli_test_contigs.fasta";
 std::string READS_FILE = FOLDER + "ecoli_test_reads.fasta";
@@ -21,9 +21,6 @@ std::string READS_FILE = FOLDER + "ecoli_test_reads.fasta";
 std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
 std::string OUTPUT_GENOME = FOLDER + "output24";
-
-int OVERLAP_THRESHOLD = 1500;
-double SEQUENCE_IDENTITY_THRESHOLD = 0.2;
 
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
@@ -39,14 +36,14 @@ std::vector<std::string> split(std::string line, char delim) {
 
 // discard overlaps that are fully contained or have extension score below thershold
 // and fill contigIds set if it is not null
-std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std::string> * contigIds) {
+std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std::string> * contigIds, int overlapThreshold, double siThreshold) {
 	std::ifstream input(file);
 	std::string line;
 	std::vector<PafLine> filteredLines;
 
 	while (std::getline(input, line)) {
 		PafLine pafLine(split(line, '\t'));
-		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.overlapScore < OVERLAP_THRESHOLD || pafLine.sequenceId < SEQUENCE_IDENTITY_THRESHOLD) {
+		if (pafLine.queryId == pafLine.targetId || pafLine.isFullyContained() || pafLine.overlapScore < overlapThreshold || pafLine.sequenceId < siThreshold) {
 			continue;
 		}
 
@@ -60,10 +57,10 @@ std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std
 	return filteredLines;
 }
 
-Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
+Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors, int overlapThreshold, double siThreshold) {
 	std::unordered_set<std::string> contigIds;
-	std::vector<PafLine> readContigOverlaps = readAndFilterLines(READ_CONTIG_OVERLAPS_FILE, &contigIds);
-	std::vector<PafLine> readOverlaps = readAndFilterLines(READ_OVERLAPS_FILE, nullptr);
+	std::vector<PafLine> readContigOverlaps = readAndFilterLines(READ_CONTIG_OVERLAPS_FILE, &contigIds, overlapThreshold, siThreshold);
+	std::vector<PafLine> readOverlaps = readAndFilterLines(READ_OVERLAPS_FILE, nullptr, overlapThreshold, siThreshold);
 
 	Graph graph(contigIds, extensionSelectors);
 
@@ -77,12 +74,12 @@ Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors) {
 
 	return graph;
 }
-bool hasEnding (std::string const &fullString, std::string const &ending) {
-    if (fullString.length() >= ending.length()) {
-        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
-    } else {
-        return false;
-    }
+bool hasEnding(std::string const &fullString, std::string const &ending) {
+	if (fullString.length() >= ending.length()) {
+		return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+	} else {
+		return false;
+	}
 }
 
 //contig
@@ -91,7 +88,7 @@ std::map<std::string, std::string> readFasta(std::string file) {
 	std::string line;
 	std::map<std::string, std::string> output;
 	bool isFastQ = false;
-	if(hasEnding(file, "fastq")){
+	if (hasEnding(file, "fastq")) {
 		isFastQ = true;
 	}
 
@@ -135,13 +132,13 @@ std::string invertDNA(std::string toInvert) {
 	return inverted;
 }
 
-std::vector<Trail> findTrails(std::string currentContig, std::map<std::string, Node*>& nodes, std::vector<Trail>& currentTrails, Trail currentTrail){
+std::vector<Trail> findTrails(std::string currentContig, std::map<std::string, Node*>& nodes, std::vector<Trail>& currentTrails, Trail currentTrail) {
 	// std::cout << "Visited node "<< currentContig << " atfer findTrails called should be true" << nodes[currentContig]->visited  << std::endl;
 	// std::cout << "Number of vertices for this node "<< nodes[currentContig]->vertices.size() << std::endl;
-	for(auto nextElement : nodes[currentContig]->vertices){
+	for (auto nextElement : nodes[currentContig]->vertices) {
 		std::string nextContig = nextElement.first;
 		// std::cout<< "Next contig " << nextContig << std::endl;
-		if(nodes[nextContig]->visited){
+		if (nodes[nextContig]->visited) {
 			continue;
 		}
 		// std::cout<< "Still Next contig " << nextContig << std::endl;
@@ -157,27 +154,37 @@ std::vector<Trail> findTrails(std::string currentContig, std::map<std::string, N
 	return currentTrails;
 }
 
-bool trailSorterByGoodness(Trail train1, Trail trail2){
+bool trailSorterByGoodness(Trail train1, Trail trail2) {
 	return (train1.goodness < trail2.goodness);
 }
 
-bool trailSorterByLengthAndGoodness(Trail train1, Trail trail2){
-	if(train1.trail.size() == trail2.trail.size()){
+bool trailSorterByLengthAndGoodness(Trail train1, Trail trail2) {
+	if (train1.trail.size() == trail2.trail.size()) {
 		return train1.goodness < trail2.goodness;
 	}
 	return (train1.trail.size() < trail2.trail.size());
 }
-int main(int argc, char** argv) {
-	if(argc == 4) {
-		FOLDER		 = argv[1];
-		CONTIGS_FILE = FOLDER + argv[2];
-		READS_FILE   = FOLDER + argv[3];
 
-		READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
-		READ_OVERLAPS_FILE		  = FOLDER + "overlaps_reads.paf";
-		OUTPUT_GENOME		      = FOLDER + "output1";
-	}
-	else {
+int main(int argc, char** argv) {
+	int overlapThreshold = 1000;
+	double siThreshold = 0.2;
+	long maxPathLength = 300000;
+	double maxOverhangExtensionRatio = 0.1;
+	int randomPathTrials = 0;
+
+	if (argc == 11) {
+		CONTIGS_FILE = argv[1];
+		READS_FILE = argv[2];
+		READ_CONTIG_OVERLAPS_FILE = argv[3];
+		READ_OVERLAPS_FILE = argv[4];
+		OUTPUT_GENOME = argv[5];
+
+		overlapThreshold = std::stoi(argv[6]);
+		siThreshold = std::stod(argv[7]);
+		maxPathLength = std::stol(argv[8]);
+		maxOverhangExtensionRatio = std::stod(argv[9]);
+		randomPathTrials = std::stoi(argv[10]);
+	} else {
 		std::cout << "Additional arguments not detected, using default ones..." << std::endl;
 	}
 
@@ -188,7 +195,12 @@ int main(int argc, char** argv) {
 	extensionSelectors.push_back(&bestOS);
 	extensionSelectors.push_back(&bestES);
 
-	Graph graph = constructGraph(extensionSelectors);
+	// build graph
+	Graph graph = constructGraph(extensionSelectors, overlapThreshold, siThreshold);
+	graph.setMaxPathLength(maxPathLength);
+	graph.setRandomPathTrials(randomPathTrials);
+
+	// eliminate duplicate paths
 	std::unordered_set<Path, PathHasher, PathComparator> uniquePaths;
 	int pathCount = 0;
 
@@ -218,7 +230,7 @@ int main(int argc, char** argv) {
 	// std::map<std::string, Connection> pathConnection;
 	std::map<std::string, Node*> nodes;
 
-	for(auto contig : graph.contigIds){
+	for (auto contig : graph.contigIds) {
 		Node * node = new Node();
 		node->contigId = contig;
 		nodes[contig] = node;
@@ -226,8 +238,8 @@ int main(int argc, char** argv) {
 
 	for (auto group : gen.consensusGroups) {
 		std::cout << "First group of contigs" << group.first.first << group.first.second << std::endl;
-		for(auto pairGroup : group.second){
-			if(contigConnections.find(group.first) != contigConnections.end() && pairGroup.validPathNumber < contigConnections[group.first].validPathNumber){
+		for (auto pairGroup : group.second) {
+			if (contigConnections.find(group.first) != contigConnections.end() && pairGroup.validPathNumber < contigConnections[group.first].validPathNumber) {
 				continue;
 			}
 
@@ -238,20 +250,20 @@ int main(int argc, char** argv) {
 
 			//Adding to cotg first vertex to second ctg 
 			double contigConnectionValue = nodes[group.first.first]->vertices[group.first.second];
-			if(contigConnectionValue < pairGroup.validPathNumber){
-				nodes[group.first.first]->vertices[group.first.second] = pairGroup.validPathNumber; 
+			if (contigConnectionValue < pairGroup.validPathNumber) {
+				nodes[group.first.first]->vertices[group.first.second] = pairGroup.validPathNumber;
 			}
 		}
 	}
 
 	// you have to sort this!!!!
 	std::vector<Trail> trails;
-	for(auto elements: nodes){
+	for (auto elements : nodes) {
 		std::string currentContigsId = elements.first;
-		nodes[currentContigsId]->visited = true;	
-		std::cout<< currentContigsId << std::endl;
+		nodes[currentContigsId]->visited = true;
+		std::cout << currentContigsId << std::endl;
 		trails = findTrails(currentContigsId, nodes, trails, Trail());
-		nodes[currentContigsId]->visited = false;	
+		nodes[currentContigsId]->visited = false;
 
 		// std::cout << "For node " << elements.first << std::endl;
 		// for(auto vertex : elements.second.vertices){
@@ -259,14 +271,14 @@ int main(int argc, char** argv) {
 		// }
 	}
 
-	for(auto trail : trails){
+	for (auto trail : trails) {
 		std::cout << "Benefit : " << trail.goodness << std::endl;
-		for(auto element : trail.trail){
+		for (auto element : trail.trail) {
 			std::cout << element.first << "->" << element.second << std::endl;
 		}
 	}
 
-	std::cout << "Number of trails found :"<< trails.size()-1 << std::endl;
+	std::cout << "Number of trails found :" << trails.size() - 1 << std::endl;
 
 	// SORT BY GOODNES 
 	// std::sort(trails.begin(), trails.end(), trailSorterByGoodnes);
@@ -283,14 +295,14 @@ int main(int argc, char** argv) {
 
 	// SORT BY LENGTH and then goodnes
 	std::sort(trails.begin(), trails.end(), trailSorterByLengthAndGoodness);
-	
+
 	std::cout << "Best by length" << std::endl;
 	std::vector<Trail> bestTrailsByLength;
-	for(int i = trails.size()-1; i  >= trails.size() - 3 && i >= 0; i --){
+	for (int i = trails.size() - 1; i >= trails.size() - 3 && i >= 0; i--) {
 		Trail curr = trails.at(i);
 		bestTrailsByLength.push_back(curr);
 		std::cout << "Benefit : " << curr.goodness << std::endl;
-		for(auto element : curr.trail){
+		for (auto element : curr.trail) {
 			std::cout << element.first << "->" << element.second << std::endl;
 		}
 	}
@@ -303,10 +315,10 @@ int main(int argc, char** argv) {
 	std::map<std::string, std::string> reads = readFasta(READS_FILE);
 	std::cout << "Done reading reads." << std::endl;
 
-	for(auto trail : bestTrailsByLength){
-		std::cout << "Currently resolving path: "<< trail.getName() << std::endl;
+	for (auto trail : bestTrailsByLength) {
+		std::cout << "Currently resolving path: " << trail.getName() << std::endl;
 		std::ofstream output;
-		output.open(OUTPUT_GENOME +"_"+ trail.getName() + ".fasta");
+		output.open(OUTPUT_GENOME + "_" + trail.getName() + ".fasta");
 		output << DNA_NAME + " " + trail.getName() + "\n";
 		bool isFirst = true;
 		int lastExtensionStart = 0;
@@ -317,7 +329,7 @@ int main(int argc, char** argv) {
 		std::string lastReadId;
 		std::string lastContig;
 
-		for(auto contigPair : trail.trail){
+		for (auto contigPair : trail.trail) {
 			Connection connection = contigConnections[contigPair];
 			std::cout << "Currently resolving contig connection: " << contigPair.first << "-" << contigPair.second << std::endl;
 			for (auto extension : connection.path.extensions) {
@@ -348,7 +360,7 @@ int main(int argc, char** argv) {
 			output.flush();
 			lastContig = contigPair.second;
 		}
-	
+
 		if (!inverted) {
 			output << (contigs.find(lastContig)->second).substr(lastExtensionStart, lastExtensionLength);
 		} else {

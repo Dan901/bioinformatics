@@ -24,10 +24,14 @@ public:
 	void insertExtensions(PafLine& line);
 	std::vector<Path> constructPaths(std::string start);
 
+	void setMaxPathLength(long len) { maxPathLength = len; }
+	void setMaxOverhangExtensionRatio(double r) { maxOverhangExtensionRatio = r; }
+	void setRandomPathTrials(int n) { randomPathTrials = n; }
+
 private:
-	const long MAX_PATH_LEN = 700000;
-	const double MAX_OVERHANG_EXTENSION_RATIO = 0.1;
-	const int RANDOM_PATH_TRIALS = 200;
+	long maxPathLength = 300000;
+	double maxOverhangExtensionRatio = 0.1;
+	int randomPathTrials = 0;
 
 	std::default_random_engine randomEngine;
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;
