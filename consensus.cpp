@@ -9,6 +9,7 @@ void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> p
 	ConsensusGroup consensus;
 	consensus.nodePair = pair;
 
+	//finds path with maximal average sequence identity
 	auto consensusSequence = std::max_element(paths.begin(), paths.end(), [](const Path& p1, const Path&p2) {
 		return p1.averageSeqId < p2.averageSeqId;
 	});
@@ -17,11 +18,13 @@ void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> p
 	consensus.validPathNumber   =  consensusSequence->averageSeqId;
 	consensus.validPathMedian   =  consensusSequence->medianSeqId;
 
+	//finds path with highest length frequency appearance
 	auto highestFrequency = std::max_element(info.begin(), info.end(), [](const std::pair<long, std::pair<int, double>>& p1, const std::pair<long, std::pair<int, double>>& p2) {
 		return p1.second.second < p2.second.second; 
 	});
 	double frequencyThreshold = highestFrequency->second.second / 2;
 
+	//filters out paths whose length frequency isn't at least 50% of the highest length frequency
 	std::copy_if(paths.begin(), paths.end(), std::back_inserter(consensus.paths), [frequencyThreshold, info](const Path& p) {
 		return info.at(p.length).second >= frequencyThreshold;
 	});
@@ -29,10 +32,12 @@ void ConsensusGenerator::createSingleGroup(std::pair<std::string, std::string> p
 }
 
 void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string> pair, std::vector<Path> paths, std::map<long, std::pair<int, double>> info) {
+	//find path of minimal length
 	auto minLengthPath = std::min_element(paths.begin(), paths.end(), [](const Path& p1, const Path&p2) {
 		return p1.length < p2.length;
 	});
 
+	//use minimal length as base of window generation
 	long startingLength  = minLengthPath->length;
 	     startingLength /= 1000;
 		 startingLength  = floor(startingLength + 0.5) * 1000;
@@ -40,12 +45,14 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 	std::vector<ConsensusWindow> windows;
 	int numberOfWindows = WIDE_RANGE / WINDOW_SIZE;
 
+	//create windows that cover the wide distribution range starting from found minimal length
 	for (int base = 0; base < numberOfWindows; base++) {
 		ConsensusWindow window;
 		window.baseLength = startingLength + base * WINDOW_SIZE;
 		windows.push_back(std::move(window));
 	}
 
+	//group found paths into their respective windows
 	for (auto path : paths) {
 		for (int i = 0; i < windows.size(); i++) {
 			if (path.length >= windows[i].baseLength && path.length < windows[i].baseLength + WINDOW_SIZE) {
@@ -55,15 +62,18 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 		}
 	}
 
+	//filter out windows which do not have any paths in them (zero-sized ones)
 	std::vector<ConsensusWindow> filteredWindows;
 	std::copy_if(windows.begin(), windows.end(), std::back_inserter(filteredWindows), [](const ConsensusWindow& w) {
 		return !w.paths.empty();
 	});
 
 	if (filteredWindows.size() < 3) {
+		//if there are less than 3 windows, group all paths into same group
 		createSingleGroup(pair, paths, info);
 	}
 	else {
+		//compute maximum sum of path frequencies across generated windows
 		double maxFreq = std::numeric_limits<double>().min();
 		for (auto& window : filteredWindows) {
 			for (auto path : window.paths) {
@@ -74,6 +84,7 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 			}
 		}
 
+		//label windows whose sum of path frequencies is less than 20% of the highest one as valleys, otherwise as peaks
 		for (auto& window : filteredWindows) {
 			window.type = window.frequenciesSum < 0.2 * maxFreq ? VALLEY : PEAK;
 		}
@@ -82,6 +93,7 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 		lengthSplits.push_back(startingLength);
 		lengthSplits.push_back(startingLength + WIDE_RANGE);
 
+		//find all PEAK-VALLEY-PEAK window sequences and, if such exist, save the path length of lowest frequency in the sequence valley window
 		for (int index = 1; index < filteredWindows.size() - 1; index++) {
 			if (filteredWindows[index].type == VALLEY && filteredWindows[index - 1].type == PEAK && filteredWindows[index + 1].type == PEAK) {
 				auto minLengthFreqPath = std::min_element(filteredWindows[index].paths.begin(), filteredWindows[index].paths.end(), [info](const Path& p1, const Path&p2) {
@@ -91,6 +103,7 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 			}
 		}
 
+		//if 'N' sequences are found, split paths into 'N + 1' groups and out form consensus groups out of each split
 		if (lengthSplits.size() > 2) {
 			std::sort(lengthSplits.begin(), lengthSplits.end());
 
@@ -107,6 +120,7 @@ void ConsensusGenerator::createMultipleGroups(std::pair<std::string, std::string
 				createSingleGroup(pair, paths, info);
 			}
 		}
+		//otherwise slam all of them into same group
 		else {
 			createSingleGroup(pair, paths, info);
 		}
@@ -117,10 +131,12 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 	std::cout << std::endl;
 	std::map<std::pair<std::string, std::string>, std::vector<Path>> anchorNodePaths;
 
+	//group paths which connect same contigs
 	for (auto path : paths) {
 		anchorNodePaths[std::make_pair(path.start, path.extensions.back()->nextId)].push_back(path);
 	}
 
+	
 	for (auto const& anchorNodePair : anchorNodePaths) {
 		long maxLength = std::numeric_limits<long>().min();
 		long minLength = std::numeric_limits<long>().max();
