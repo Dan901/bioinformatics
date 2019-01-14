@@ -198,6 +198,7 @@ int main(int argc, char** argv) {
 	// build graph
 	Graph graph = constructGraph(extensionSelectors, overlapThreshold, siThreshold);
 	graph.setMaxPathLength(maxPathLength);
+	graph.setMaxOverhangExtensionRatio(maxOverhangExtensionRatio);
 	graph.setRandomPathTrials(randomPathTrials);
 
 	// eliminate duplicate paths
