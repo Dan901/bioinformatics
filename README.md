@@ -22,7 +22,7 @@ Start the script by writing:
  
  As an output there should be a file named main. Here is an example of usage:
  ```bash
- main data/EColi/ecoli_test_contigs.fasta data/EColi/ecoli_test_reads.fasta data/EColi/overlaps_reads_contigs.paf data/EColi/overlaps_reads.paf data/EColi/prefix 1000 0.2 300000 0.2 0
+ ./main data/EColi/ecoli_test_contigs.fasta data/EColi/ecoli_test_reads.fasta data/EColi/overlaps_reads_contigs.paf data/EColi/overlaps_reads.paf data/EColi/prefix 1000 0.2 300000 0.2 0
  ```
  
  Arguments in order are:
