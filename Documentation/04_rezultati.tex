@@ -1,1 +1,64 @@
 \chapter{Rezultati}
+Dana su nam 3 genoma za testiranje:
+\begin{enumerate}
+\item EColi - sintetski podaci (3 contig-a)
+\item CJejuni - stvarni podaci (6 contig-a)
+\item BGrahamii - stvarni podaci (6 contiga-a)
+\end{enumerate}
+\section{EColi}
+Kod EColi smo uspjeli ostvariti skoro savršenu pododarnost kao što vidimo na slici \ref{fig:ecoli}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.45]{img/EColi.png}
+    \caption{Ecoli - rezultati s Geparda}
+    \label{fig:ecoli}
+\end{figure}
+
+Duljina referentne sekvence je 4,641,651 a naše 4,641,673. GC ratio je za obje sekvence jednak. Naravno da i podudarnost nismo dobili na bazu ali smo uspjeli dobiti jednu konzistentnu sekvencu. Količina vremena koja je potrebna da se odvrti je u prosjeku 10 sekundi. A zauzima ~50 MiB memorije.
+
+\section{BGrahamii}
+Kod BGrahami nismo uspjeli spojiti sve contige i da budu u skladu s referencom. U nastavku sljedi nekoliko vrijednih pokušaja. Za procesiranje Grahmii potrebna je ~1 min te ~200 MiB memorije. 
+
+
+Najdulja sekvenca koju smo dobili je Ctg2-Ctg4-Ctg5-ctg1-Ctg3-Ctg0. Iako taj rezultat nije najsretniji  jer iako smo povezali sve contige nisu uspjeli baš dobro ih povezati. Uspjeli smo puno bolje naći manje dijelove od par sekvenca i povezati ih kao što vidimo na narednim slikama.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Grah8.png}
+    \caption{BGrahamii - rezultati s Geparda 1}
+    \label{fig:grahmi1}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Grah10.png}
+    \includegraphics[scale=0.5]{img/Grah1.png}
+    \caption{BGrahamii - rezultati s Geparda 2}
+    \label{fig:grahmi2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{img/Grah2.png}
+    \includegraphics[scale=0.5]{img/Grah3.png}
+    \caption{BGrahamii - rezultati s Geparda 3}
+    \label{fig:grahmi3}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Grah4.png}
+    \includegraphics[scale=0.5]{img/Grah5.png}
+    \caption{BGrahamii - rezultati s Geparda 4}
+    \label{fig:grahmi4}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Grah9.png}    \includegraphics[scale=0.5]{img/Grah6.png}
+    \caption{BGrahamii - rezultati s Geparda 5}
+    \label{fig:grahmi5}
+\end{figure}

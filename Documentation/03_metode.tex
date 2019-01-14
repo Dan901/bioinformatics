@@ -61,4 +61,56 @@ Proces odabira takve sekvence započinje grupiranjem pronađenih puteva u tzv. k
 \end{enumerate}
 Nakon stvaranja svake od grupa, iz istih se filtriraju putevi čija je frekvencija pojavljivanja duljine manja od $50\%$ najveće frekvencije. Jednom kada su stvorene grupe između svih parova contig-a prelazi se na zadnji korak algoritma.
 
-\section{Mihaela}
+\section{Spajanje spojenih contiga}
+Za svaki par spojenih contiga dobijemo n-grupa te uzmemo path koji je najbolji s obzirom na neku mjeru. Implementrali smo dvije mjere koje koristimo a to su: 
+\begin{itemize}
+    \item prosjek svih SI
+    \item medijan svih SI
+\end{itemize}
+
+
+Nakon odabira najboljeg puta između dvije contige  radimo još jedan graf. Graf koji radimo radimo radi pronalaska najboljeg puta koji prolazi kroz sve contige ili kroz njih maksimalno koliko može.
+
+
+Graf je usmjeren jer razlikujemo poveznicu Ctg1->Ctg2 i Ctg2->Ctg1. Contiga 1 je povezana sa svojim krajom s početkom contige 2. Dok Contiga 2 je povezana sa svojim krajom s početkom contige 1. Ako idemo kroz graf nakon što uđemo kroz glavu moramo proći kroz rep pa je tako potrebno da ovo bude ili usmjereni graf ili kompleksnija struktura. Osim što je usmjeren graf je i težinski. Težine su ili medijan SI ili prosjek svih SI između te dvije contige. Primjer na slici \ref{fig:graph} je ilustracija kako graf može izgledati ako imamo 4 spojene contige. Za ovaj primjer još je relativno jednostavno pronaći Hamiltonov put ali kada imamo više konekcija potrebno je proci kroz sve moguće kako bismo odabrali najbolju poveznicu svih contiga.
+
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture} 
+	
+     \node[shape=circle,draw=black] (ctg1)  at (1,4) {Ctg1};
+    \node[shape=circle,draw=black]  (ctg2) at (6,3.5) {Ctg2} ;
+    \node[shape=circle,draw=black] (ctg3) at (-1,2)  {Ctg3} ;
+    \node[shape=circle,draw=black]  (ctg4) at (9,1.5) {Ctg4} ;
+
+    
+    
+
+\begin{scope}[>={Stealth[black]},
+              every node/.style={fill=white,circle},
+              every edge/.style={draw=black,very thick}]
+              
+    \path [->] (ctg1) edge node[left] {$0,2$} (ctg2);
+    \path [->] (ctg2) edge node[left] {$0,3$} (ctg4);
+    \path [->] (ctg4) edge node[left] {$0,1$} (ctg3);
+    \path [->] (ctg3) edge node[left] {$0,6$} (ctg2);
+    \path [->] (ctg1) edge node[left] {$0,1$} (ctg4);
+    
+\end{scope}
+\end{tikzpicture}
+\caption{Graf contiga - pronalazak Hamiltonovog puta}
+\label{fig:contigs}
+\end{figure}
+
+
+Nakon što smo sagradili graf moramo pronaći Hamiltonov put. Pronalazak Hamiltonovog puta je implementiran kao rekurzija. Nakon što dobijemo sve puteve koji i nisu nuzno Hamiltonovi, sortiramo sve puteve po duljini a nakon toga po "dobroti"(suma medijana ili prosjeka). Odabiru se trenutno 3 najbolja puta i šalju na ispis. 
+
+
+Ispis je implementiran tako da pazi na kojem smo contigu te prva contiga mu je referentna strana. Prilikom ispisa obilazimo contige redosljedom iz put te contige i readove koji su na suprotnoj strani okrećemo i uzimamo komplement kako bi bili na istoj DNA zavojnici.  
+
+
+Krajnji rezultat su maksimalno 3 datoteke koje u svojim imenima sadrže redosljed contiga koje je algoritam pronašao. 
+
+
+
