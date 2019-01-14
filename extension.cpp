@@ -11,7 +11,7 @@ bool compareByOverlapScore(Extension * e1, Extension * e2) {
 
 // true if e2 is better than e1
 bool compareByExtensionScore(Extension * e1, Extension * e2) {
-	if (e1->overlapScore == e2->overlapScore) {
+	if (e2->extensionScore == e1->extensionScore) {
 		return e2->nextLen > e1->nextLen;
 	}
 

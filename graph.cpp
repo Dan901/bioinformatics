@@ -46,7 +46,7 @@ void Graph::insertExtensions(PafLine & line) {
 	}
 
 	int overhangSum = e1.overhangLen + e2.overhangLen;
-	if (overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e1.extensionLen || overhangSum > MAX_OVERHANG_EXTENSION_RATIO * e2.extensionLen) return;
+	if (e1.overhangLen  > MAX_OVERHANG_EXTENSION_RATIO * e1.extensionLen ||  e2.overhangLen > MAX_OVERHANG_EXTENSION_RATIO * e2.extensionLen) return;
 
 	if (line.sameStrand) {
 		if (line.extensionScore1 > line.extensionScore2) {

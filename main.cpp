@@ -13,16 +13,16 @@
 #include "node.h"
 #include "trail.h"
 
-std::string DNA_NAME = ">CJejuni ";
-std::string FOLDER = "data/CJejuni/";
-std::string CONTIGS_FILE = FOLDER + "CJejuni - contigs.fasta";
-std::string READS_FILE = FOLDER + "CJejuni - reads.fastq";
+std::string DNA_NAME = ">EColi ";
+std::string FOLDER = "data/EColi/";
+std::string CONTIGS_FILE = FOLDER + "ecoli_test_contigs.fasta";
+std::string READS_FILE = FOLDER + "ecoli_test_reads.fasta";
 
 std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
-std::string OUTPUT_GENOME = FOLDER + "output7";
+std::string OUTPUT_GENOME = FOLDER + "output24";
 
-int OVERLAP_THRESHOLD = 1000;
+int OVERLAP_THRESHOLD = 1500;
 double SEQUENCE_IDENTITY_THRESHOLD = 0.2;
 
 std::vector<std::string> split(std::string line, char delim) {
