@@ -29,9 +29,9 @@ public:
 	void setRandomPathTrials(int n) { randomPathTrials = n; }
 
 private:
-	long maxPathLength = 300000;
-	double maxOverhangExtensionRatio = 0.1;
-	int randomPathTrials = 0;
+	long maxPathLength;
+	double maxOverhangExtensionRatio;
+	int randomPathTrials;
 
 	std::default_random_engine randomEngine;
 	std::unordered_map<std::string, std::vector<Extension>> prefixes;
