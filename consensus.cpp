@@ -162,25 +162,7 @@ void ConsensusGenerator::generateConsensus(std::unordered_set<Path, PathHasher, 
 			createSingleGroup(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
 		}
 		else if (distributionRange > WIDE_RANGE) {
-			std::vector<Path> novi(anchorNodePair.second.size());
-			std::copy(anchorNodePair.second.begin(), anchorNodePair.second.end(), novi.begin());
-			std::vector<Path> novi2(novi.size());
-			std::sort(novi.begin(), novi.end(), less_than_key());
-			std::copy(novi.begin(), novi.end(), novi2.begin());
-
-			while (novi.back().length - novi.front().length > WIDE_RANGE) {
-				novi.pop_back();
-			}
-			while (novi2.back().length - novi2.front().length > WIDE_RANGE) {
-				novi2.erase(novi2.begin());
-			}
-
-			bool takeFirst = novi.size() > novi2.size();
-			if (novi.size() == novi2.size()) {
-				takeFirst = novi.front().length < novi2.front().length;
-			}
-
-			createMultipleGroups(anchorNodePair.first, takeFirst ? novi : novi2, pathLengthFrequencies);
+			//discard completely
 		}
 		else {
 			createMultipleGroups(anchorNodePair.first, anchorNodePair.second, pathLengthFrequencies);
