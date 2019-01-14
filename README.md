@@ -8,6 +8,8 @@ Algorithm implementation is based on the work:
 See the list of [contributors](https://github.com/Dan901/bioinformatics/graphs/contributors) who participated in this project.
 
 ## Usage - for linux users
+Requirements: g++-8
+
 First one should clone the project with git. 
 
 Second, start the 'compile' script. If the script is not executable, type: 
