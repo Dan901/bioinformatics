@@ -20,10 +20,10 @@ std::string READS_FILE = FOLDER + "CJejuni - reads.fastq";
 
 std::string READ_CONTIG_OVERLAPS_FILE = FOLDER + "overlaps_reads_contigs.paf";
 std::string READ_OVERLAPS_FILE = FOLDER + "overlaps_reads.paf";
-std::string OUTPUT_GENOME = FOLDER + "output3";
+std::string OUTPUT_GENOME = FOLDER + "output7";
 
 int OVERLAP_THRESHOLD = 1000;
-double SEQUENCE_IDENTITY_THRESHOLD = 0.3;
+double SEQUENCE_IDENTITY_THRESHOLD = 0.2;
 
 std::vector<std::string> split(std::string line, char delim) {
 	std::vector<std::string> elements;
@@ -325,14 +325,14 @@ int main(int argc, char** argv) {
 					if (!inverted) {
 						output << (contigs.find(contigPair.first)->second).substr(lastExtensionStart, extension->lastStart);
 					} else {
-						output << invertDNA((contigs.find(contigPair.first)->second).substr(lastExtensionStart, extension->lastStart));
+						output << invertDNA((contigs.find(contigPair.first)->second).substr(lastExtensionEnd, extension->lastEnd));
 					}
 					isFirst = false;
 				} else {
 					if (!inverted) {
 						output << (reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart);
 					} else {
-						output << invertDNA((reads.find(lastReadId)->second).substr(lastExtensionStart, extension->lastStart));
+						output << invertDNA((reads.find(lastReadId)->second).substr(lastExtensionEnd, extension->lastEnd));
 					}
 				}
 				lastExtensionStart = extension->nextStart;
@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
 		if (!inverted) {
 			output << (contigs.find(lastContig)->second).substr(lastExtensionStart, lastExtensionLength);
 		} else {
-			output << invertDNA((contigs.find(lastContig)->second).substr(lastExtensionStart, lastExtensionLength));
+			output << invertDNA((contigs.find(lastContig)->second).substr(0, lastExtensionEnd));
 		}
 		output.flush();
 		output.close();
