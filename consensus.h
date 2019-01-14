@@ -23,6 +23,12 @@ struct ConsensusWindow {
 	double frequenciesSum = 0;
 };
 
+struct less_than_key {
+	inline bool operator() (const Path& p1, const Path& p2) {
+		return (p1.length < p2.length);
+	}
+};
+
 //Class providing the consensus resolution utility. 
 class ConsensusGenerator {
 private:
