@@ -57,12 +57,12 @@ std::vector<PafLine> readAndFilterLines(std::string file, std::unordered_set<std
 	return filteredLines;
 }
 
-Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors, int overlapThreshold, double siThreshold) {
+Graph constructGraph(std::vector<ExtensionSelector*> extensionSelectors, int overlapThreshold, double siThreshold, long maxPathLength, double maxOverhangExtensionRatio, int randomPathTrials) {
 	std::unordered_set<std::string> contigIds;
 	std::vector<PafLine> readContigOverlaps = readAndFilterLines(READ_CONTIG_OVERLAPS_FILE, &contigIds, overlapThreshold, siThreshold);
 	std::vector<PafLine> readOverlaps = readAndFilterLines(READ_OVERLAPS_FILE, nullptr, overlapThreshold, siThreshold);
 
-	Graph graph(contigIds, extensionSelectors);
+	Graph graph(contigIds, extensionSelectors, maxPathLength, maxOverhangExtensionRatio, randomPathTrials);
 
 	for (auto line : readContigOverlaps) {
 		graph.insertExtensions(line);
@@ -196,10 +196,7 @@ int main(int argc, char** argv) {
 	extensionSelectors.push_back(&bestES);
 
 	// build graph
-	Graph graph = constructGraph(extensionSelectors, overlapThreshold, siThreshold);
-	graph.setMaxPathLength(maxPathLength);
-	graph.setMaxOverhangExtensionRatio(maxOverhangExtensionRatio);
-	graph.setRandomPathTrials(randomPathTrials);
+	Graph graph = constructGraph(extensionSelectors, overlapThreshold, siThreshold, maxPathLength, maxOverhangExtensionRatio, randomPathTrials);
 
 	// eliminate duplicate paths
 	std::unordered_set<Path, PathHasher, PathComparator> uniquePaths;

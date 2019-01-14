@@ -19,14 +19,12 @@ public:
 	std::unordered_set<std::string> contigIds;
 	std::vector<ExtensionSelector*> extensionSelectors;
 
-	Graph(std::unordered_set<std::string> contigIds, std::vector<ExtensionSelector*> extensionSelectors) : contigIds(contigIds), extensionSelectors(extensionSelectors), randomEngine(std::default_random_engine(time(0))) {}
+	Graph(std::unordered_set<std::string> contigIds, std::vector<ExtensionSelector*> extensionSelectors, long maxPathLength, double maxOverhangExtensionRatio, int randomPathTrials) : 
+		contigIds(contigIds), extensionSelectors(extensionSelectors), randomEngine(std::default_random_engine(time(0))),
+		maxPathLength(maxPathLength), maxOverhangExtensionRatio(maxOverhangExtensionRatio), randomPathTrials(randomPathTrials) {}
 
 	void insertExtensions(PafLine& line);
 	std::vector<Path> constructPaths(std::string start);
-
-	void setMaxPathLength(long len) { maxPathLength = len; }
-	void setMaxOverhangExtensionRatio(double r) { maxOverhangExtensionRatio = r; }
-	void setRandomPathTrials(int n) { randomPathTrials = n; }
 
 private:
 	long maxPathLength;
