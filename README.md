@@ -22,12 +22,13 @@ Start the script by writing:
  
  As an output there should be a file named main. Here is an example of usage:
  ```bash
- ./main data/EColi/ecoli_test_contigs.fasta data/EColi/ecoli_test_reads.fasta data/EColi/overlaps_reads_contigs.paf data/EColi/overlaps_reads.paf data/EColi/prefix 1000 0.2 300000 0.2 0
+ ./main data/EColi/ecoli_test_contigs.fasta data/EColi/ecoli_test_reads.fasta data/EColi/overlaps_reads_contigs.paf data/EColi/overlaps_reads.paf data/EColi/prefix  1000 0.1 300000 0.2 200
  ```
+ The last 5 arguments are parameters that effect the way the algorithm behaves. The given parameters are recommended settings for Ecoli. Other then thoose you are free to adjust them and play until you are satisfied with the result. As there is a radnom factor involved please understand that you can get different paths with the same arguments. Also if you with to remove random paths(random search) set the last argument to 0. 
  
  Arguments in order are:
  1. Relative or absolute path to the files with contigs in fasta or fastq format = data/EColi/ecoli_test_contigs.fasta
- 2. Relative or absolute path to the files with contigs in fasta or fastq format = data/EColi/ecoli_test_reads.fasta
+ 2. Relative or absolute path to the files with reads in fasta or fastq format = data/EColi/ecoli_test_reads.fasta
  3.	Relative or absolute path to the files with overlaps from contigs and reads in paf format = data/EColi/overlaps_reads_contigs.paf
  4.	Relative or absolute path to the files with overlaps from reads with reads in paf format = data/EColi/overlaps_reads.paf
  5. Relative or absolute path to the output file = data/Ecoli/prefix
@@ -38,3 +39,5 @@ Start the script by writing:
  9. maxOverhangExtensionRatio, double that represents how big can the overhang be in relation to an extension 
   * overhang < maxOverhangExtensionRatio * extensionLength 
  10.	randomPathTrials, number of random paths that shall be created using the monteCarlo method, it should be a natural number
+ 
+ 
