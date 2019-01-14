@@ -104,10 +104,10 @@ Graf je usmjeren jer razlikujemo poveznicu Ctg1->Ctg2 i Ctg2->Ctg1. Contiga 1 je
 \end{figure}
 
 
-Nakon što smo sagradili graf moramo pronaći Hamiltonov put. Pronalazak Hamiltonovog puta je implementiran kao rekurzija. Nakon što dobijemo sve puteve koji i nisu nuzno Hamiltonovi, sortiramo sve puteve po duljini a nakon toga po "dobroti"(suma medijana ili prosjeka). Odabiru se trenutno 3 najbolja puta i šalju na ispis. 
+Nakon što smo sagradili graf moramo pronaći Hamiltonov put. Pronalazak Hamiltonovog puta je implementiran kao rekurzija. Putovi koje dobijemo nisu nužno Hamiltonovi putovi ali nakon sortiramo tako da na kraju vectora budu oni koji su najbliže toj definiciji.  Sortiramo sve puteve po duljini a nakon toga po "dobroti"(suma medijana ili prosjeka). Odabiru se trenutno 3 najbolja puta i šalju na ispis. 
 
 
-Ispis je implementiran tako da pazi na kojem smo contigu te prva contiga mu je referentna strana. Prilikom ispisa obilazimo contige redosljedom iz put te contige i readove koji su na suprotnoj strani okrećemo i uzimamo komplement kako bi bili na istoj DNA zavojnici.  
+Ispis je implementiran tako da pazi na kojem smo contigu te prva contiga nam je referentna strana. Prilikom ispisa obilazimo contige redosljedom iz puta. Contige i readove koji su na suprotnoj strani okrećemo i uzimamo komplement kako bi bili na istoj DNA zavojnici. Razrješavanje overlapova radimo tako da uzmemo odmah sljedeći jer nam različiti pristupi nisu mijenjali uveliko rezultate.   
 
 
 Krajnji rezultat su maksimalno 3 datoteke koje u svojim imenima sadrže redosljed contiga koje je algoritam pronašao. 
