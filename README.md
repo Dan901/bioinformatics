@@ -7,6 +7,15 @@ Algorithm implementation is based on the work:
 ## Authors
 See the list of [contributors](https://github.com/Dan901/bioinformatics/graphs/contributors) who participated in this project.
 
+## Recommended parameters 
+For Ecoli:
+1000 0.1 300000 0.2 200 -> also random paths can be set to 0
+For Cjejuni (same also works for bgrahmii):
+500 0.3 300000 0.2 200
+1000 0.3 500000 0.2 200
+500 0.4 300000 0.05 500
+500 0.3 300000 0.1 500
+
 ## Usage - for linux users
 Requirements: g++-8
 
